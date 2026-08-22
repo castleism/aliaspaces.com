@@ -1,0 +1,39 @@
+name: Deploy AliaSpaces migration front door
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare public artifact
+        run: |
+          mkdir -p .pages-artifact
+          rsync -a --delete \
+            --include '/index.html' \
+            --include '/404.html' \
+            --include '/CNAME' \
+            --include '/.nojekyll' \
+            --exclude '*' \
+            ./ .pages-artifact/
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .pages-artifact
+      - id: deployment
+        uses: actions/deploy-pages@v4
