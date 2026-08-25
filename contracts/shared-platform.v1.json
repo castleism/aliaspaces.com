@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AliaSpaces shared-platform contract inventory",
+  "version": "1.0.0-draft",
+  "status": "design-only",
+  "productionAuthority": "MyPersonas",
+  "consumer": "AliaSpaces",
+  "rules": {
+    "failClosed": true,
+    "noProviderCredentials": true,
+    "noServiceRoleInBrowser": true,
+    "noDualDeployment": true
+  },
+  "interfaces": [
+    {
+      "name": "identity-projection",
+      "purpose": "Return the minimum account and persona identity needed by the social product.",
+      "requiredProperties": ["account_id", "persona_id", "handle", "lifecycle_state"]
+    },
+    {
+      "name": "entitlement-projection",
+      "purpose": "Return a fail-closed social entitlement without exposing billing internals.",
+      "requiredProperties": ["account_id", "can_search", "can_publish", "checked_at"]
+    },
+    {
+      "name": "media-ingest",
+      "purpose": "Accept owner-authorized bytes and return an opaque asset identifier plus safe renditions.",
+      "requiredProperties": ["asset_id", "renditions", "provenance_state"]
+    },
+    {
+      "name": "provenance-projection",
+      "purpose": "Return public AI-disclosure and watermark metadata without revealing stable owner identifiers.",
+      "requiredProperties": ["asset_id", "ai_assisted", "disclosure", "watermark_state"]
+    },
+    {
+      "name": "account-lifecycle",
+      "purpose": "Coordinate export and deletion exactly once across product-owned records.",
+      "requiredProperties": ["operation_id", "account_id", "operation", "state"]
+    }
+  ]
+}

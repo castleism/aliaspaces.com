@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' blob: data:; img-src 'self' blob: data:; script-src 'self'; style-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>AliaSpaces social extraction workbench</title>
+  <link rel="stylesheet" href="./src/app.css">
+  <link rel="stylesheet" href="./src/components/profile-image-crop.css">
+</head>
+<body>
+  <header>
+    <a class="brand" href="./" aria-label="AliaSpaces extraction workbench home">
+      <span class="brand-mark" aria-hidden="true">A</span>
+      <span>AliaSpaces</span>
+    </a>
+    <span class="status-badge">Local extraction workbench</span>
+  </header>
+  <main>
+    <section class="intro" aria-labelledby="page-title">
+      <p class="eyebrow">First independent social component</p>
+      <h1 id="page-title">Place the crop before a profile image is uploaded</h1>
+      <p>Try the avatar, banner, page-background, and feed-header crop behavior
+        without signing in or sending the selected file anywhere.</p>
+    </section>
+
+    <section class="workspace" aria-labelledby="crop-title">
+      <div class="controls">
+        <h2 id="crop-title">Crop a local image</h2>
+        <label for="slot">Profile image slot</label>
+        <select id="slot">
+          <option value="avatar_url">Profile image</option>
+          <option value="banner_url">Banner</option>
+          <option value="bg_url">Page background</option>
+          <option value="feed_img_url">Feed header</option>
+        </select>
+        <label for="source">Choose PNG, JPEG, or WebP</label>
+        <input id="source" type="file" accept="image/png,image/jpeg,image/webp">
+        <button class="btn" id="crop" type="button" disabled>Choose crop</button>
+        <p id="message" class="message" role="status" aria-live="polite">No image selected.</p>
+        <p class="privacy-note"><strong>Private by design:</strong> this workbench makes no network requests and does not save the image.</p>
+      </div>
+      <figure class="result">
+        <div class="preview-frame" id="previewFrame">
+          <span id="emptyPreview">The cropped preview appears here.</span>
+          <img id="preview" alt="Cropped profile asset preview" hidden>
+        </div>
+        <figcaption id="metadata">No generated file.</figcaption>
+      </figure>
+    </section>
+
+    <aside class="release-note">
+      <strong>Not a production release.</strong> Upload, AI disclosure,
+      watermarking, provenance, storage, and publication remain behind reviewed
+      shared contracts and are deliberately absent here.
+    </aside>
+  </main>
+  <script src="./src/components/profile-image-crop.js"></script>
+  <script src="./src/app.js"></script>
+</body>
+</html>
