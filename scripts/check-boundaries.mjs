@@ -59,4 +59,13 @@ for (const directory of ["apps", "contracts", "docs", "scripts", "supabase"]) {
   assert.doesNotMatch(pages, new RegExp(`--include ['\"]\\/${directory}`));
 }
 
+for (const workflowName of ["ci.yml", "pages.yml"]) {
+  const workflow = await readFile(path.join(root, ".github/workflows", workflowName), "utf8");
+  const actionRefs = [...workflow.matchAll(/uses:\s*[^\s@]+@([^\s#]+)/g)].map((match) => match[1]);
+  assert.ok(actionRefs.length > 0, `${workflowName} must declare at least one external action`);
+  for (const actionRef of actionRefs) {
+    assert.match(actionRef, /^[0-9a-f]{40}$/, `${workflowName} must pin external actions to full commit SHAs`);
+  }
+}
+
 console.log(`Boundary check passed for ${sourceFiles.length} source files.`);
