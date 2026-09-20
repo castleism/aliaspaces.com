@@ -40,6 +40,7 @@ test("mobile surface labels itself local/demo and does not claim network success
   assert.match(html, /connect-src 'none'/);
   assert.match(html, /Local demo/);
   assert.match(app, /AliaSpacesLocal/);
+  assert.match(app, /Device identity switcher/);
   assert.doesNotMatch(app, /fetch\s*\(|XMLHttpRequest|WebSocket|sendBeacon/);
   assert.match(css, /safe-area/);
 });

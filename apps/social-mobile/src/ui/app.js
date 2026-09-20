@@ -237,6 +237,15 @@
   function renderYou() {
     const viewer = activeProfile();
     const fixtures = api.fixtureCatalog();
+    const switcher = state.profiles.map((profile) => `
+      <article class="list-item">
+        <p><strong>${escapeHtml(profile.displayName)}</strong> · @${escapeHtml(profile.handle)} ${sourceChip(profile.source)}</p>
+        <p class="meta">Device identity switcher. This list is not a social directory and still includes blocked local profiles.</p>
+        <div class="actions">
+          <button type="button" class="ghost" data-switch="${profile.id}">Act as this profile</button>
+        </div>
+      </article>
+    `).join("");
     panels.you.innerHTML = `
       <div class="card">
         <h1>This device</h1>
@@ -247,6 +256,10 @@
           <button type="button" class="btn" id="exportData">Export JSON</button>
           <button type="button" class="ghost" id="importData">Import JSON</button>
         </div>
+      </div>
+      <div class="card">
+        <h2>Switch local profile</h2>
+        <div class="list">${switcher || `<p class="meta">No local profiles yet.</p>`}</div>
       </div>
       <div class="card">
         <h2>Fixtures vs your records</h2>
