@@ -2,17 +2,23 @@ package com.aliaspaces.social.local
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
+import android.net.ConnectivityManager
+import android.net.Network
+import android.net.NetworkCapabilities
 import android.net.Uri
 import android.os.Bundle
 import android.webkit.CookieManager
 import android.webkit.JavascriptInterface
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
+import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
@@ -27,13 +33,16 @@ import java.nio.charset.StandardCharsets
 class MainActivity : AppCompatActivity() {
     private lateinit var webView: WebView
     private lateinit var modeLabel: TextView
+    private lateinit var offlineBanner: TextView
     private lateinit var liveButton: Button
+    private lateinit var socialButton: Button
     private lateinit var localButton: Button
-    private var liveMode = true
+    private var appMode = MODE_WEBSITE
     private var pendingExport: String? = null
     private var fileCallback: ValueCallback<Array<Uri>>? = null
     private lateinit var liveShellJs: String
     private lateinit var assetLoader: WebViewAssetLoader
+    private var connectivityCallback: ConnectivityManager.NetworkCallback? = null
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -41,7 +50,9 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         webView = findViewById(R.id.webView)
         modeLabel = findViewById(R.id.modeLabel)
+        offlineBanner = findViewById(R.id.offlineBanner)
         liveButton = findViewById(R.id.liveButton)
+        socialButton = findViewById(R.id.socialButton)
         localButton = findViewById(R.id.localButton)
         liveShellJs = assets.open("www/src/live/social-shell.js").bufferedReader().use { it.readText() } +
             "\nwindow.AliaSpacesLiveShell.watch();"
@@ -80,9 +91,24 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun onPageFinished(view: WebView, url: String) {
-                if (liveMode && isProductUrl(url)) {
+                if (appMode == MODE_WEBSITE && isProductUrl(url)) {
                     view.evaluateJavascript(liveShellJs, null)
                 }
+                if (appMode == MODE_WEBSITE && isProductUrl(url)) {
+                    prefs().edit().putString(PREF_WEBSITE_URL, url).apply()
+                }
+                updateOfflineBanner()
+            }
+
+            override fun onReceivedError(
+                view: WebView,
+                request: WebResourceRequest,
+                error: WebResourceError
+            ) {
+                if (!request.isForMainFrame) return
+                if (appMode == MODE_LOCAL) return
+                view.loadUrl(ERROR_URL)
+                Toast.makeText(this@MainActivity, getString(R.string.load_error_hint), Toast.LENGTH_LONG).show()
             }
         }
         webView.webChromeClient = object : WebChromeClient() {
@@ -102,10 +128,11 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        liveButton.setOnClickListener { showLive() }
-        localButton.setOnClickListener { showLocal() }
+        liveButton.setOnClickListener { showMode(MODE_WEBSITE) }
+        socialButton.setOnClickListener { showMode(MODE_SOCIAL) }
+        localButton.setOnClickListener { showMode(MODE_LOCAL) }
         findViewById<Button>(R.id.browserButton).setOnClickListener {
-            openChrome(if (liveMode) webView.url ?: LIVE_URL else LIVE_URL)
+            openChrome(if (appMode == MODE_WEBSITE) webView.url ?: LIVE_URL else LIVE_URL)
             Toast.makeText(this, getString(R.string.google_login_hint), Toast.LENGTH_LONG).show()
         }
 
@@ -116,17 +143,24 @@ class MainActivity : AppCompatActivity() {
         })
 
         if (savedInstanceState != null) {
-            liveMode = savedInstanceState.getBoolean(STATE_LIVE, true)
+            appMode = savedInstanceState.getString(STATE_MODE, MODE_WEBSITE) ?: MODE_WEBSITE
             webView.restoreState(savedInstanceState)
             renderMode()
-        } else {
-            showLive()
+        } else if (!openIntent(intent)) {
+            showMode(prefs().getString(PREF_MODE, MODE_WEBSITE) ?: MODE_WEBSITE, restoreWebsite = true)
         }
+        registerConnectivity()
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        openIntent(intent)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putBoolean(STATE_LIVE, liveMode)
+        outState.putString(STATE_MODE, appMode)
         webView.saveState(outState)
     }
 
@@ -135,26 +169,86 @@ class MainActivity : AppCompatActivity() {
         super.onPause()
     }
 
-    private fun showLive() {
-        liveMode = true
-        renderMode()
-        webView.loadUrl(LIVE_URL)
+    override fun onDestroy() {
+        connectivityCallback?.let { callback ->
+            connectivityManager()?.unregisterNetworkCallback(callback)
+        }
+        super.onDestroy()
     }
 
-    private fun showLocal() {
-        liveMode = false
+    private fun showMode(mode: String, url: String? = null, restoreWebsite: Boolean = false) {
+        appMode = mode
+        prefs().edit().putString(PREF_MODE, mode).apply()
         renderMode()
-        webView.loadUrl(LOCAL_URL)
+        val target = when (mode) {
+            MODE_SOCIAL -> SOCIAL_URL
+            MODE_LOCAL -> LOCAL_URL
+            else -> url
+                ?: if (restoreWebsite) prefs().getString(PREF_WEBSITE_URL, LIVE_URL) else LIVE_URL
+        }
+        webView.loadUrl(target ?: LIVE_URL)
+        updateOfflineBanner()
     }
 
     private fun renderMode() {
-        modeLabel.setText(if (liveMode) R.string.live_mode_hint else R.string.local_mode_hint)
-        liveButton.isEnabled = !liveMode
-        localButton.isEnabled = liveMode
+        modeLabel.setText(
+            when (appMode) {
+                MODE_SOCIAL -> R.string.social_mode_hint
+                MODE_LOCAL -> R.string.local_mode_hint
+                else -> R.string.website_mode_hint
+            }
+        )
+        liveButton.isEnabled = appMode != MODE_WEBSITE
+        socialButton.isEnabled = appMode != MODE_SOCIAL
+        localButton.isEnabled = appMode != MODE_LOCAL
+    }
+
+    private fun openIntent(intent: Intent?): Boolean {
+        val uri = intent?.data ?: return false
+        when {
+            uri.scheme == "aliaspaces" && uri.host == MODE_SOCIAL -> showMode(MODE_SOCIAL)
+            uri.scheme == "aliaspaces" && uri.host == MODE_LOCAL -> showMode(MODE_LOCAL)
+            uri.scheme == "aliaspaces" -> showMode(MODE_WEBSITE)
+            isProductUrl(uri.toString()) -> showMode(MODE_WEBSITE, uri.toString())
+            else -> return false
+        }
+        return true
     }
 
     private fun openChrome(url: String) {
         CustomTabsIntent.Builder().build().launchUrl(this, Uri.parse(url))
+    }
+
+    private fun prefs() = getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+
+    private fun connectivityManager() =
+        getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
+
+    private fun isOnline(): Boolean {
+        val manager = connectivityManager() ?: return true
+        val network = manager.activeNetwork ?: return false
+        val capabilities = manager.getNetworkCapabilities(network) ?: return false
+        return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+    }
+
+    private fun updateOfflineBanner() {
+        offlineBanner.visibility = if (appMode != MODE_LOCAL && !isOnline()) View.VISIBLE else View.GONE
+    }
+
+    private fun registerConnectivity() {
+        val manager = connectivityManager() ?: return
+        val callback = object : ConnectivityManager.NetworkCallback() {
+            override fun onAvailable(network: Network) {
+                runOnUiThread { updateOfflineBanner() }
+            }
+
+            override fun onLost(network: Network) {
+                runOnUiThread { updateOfflineBanner() }
+            }
+        }
+        connectivityCallback = callback
+        manager.registerDefaultNetworkCallback(callback)
+        updateOfflineBanner()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -211,13 +305,21 @@ class MainActivity : AppCompatActivity() {
     }
 
     companion object {
+        const val MODE_WEBSITE = "website"
+        const val MODE_SOCIAL = "social"
+        const val MODE_LOCAL = "local"
         private const val LIVE_URL = "https://mypersonas.online/"
+        private const val SOCIAL_URL = "https://appassets.androidplatform.net/assets/www/live.html"
         private const val LOCAL_URL = "https://appassets.androidplatform.net/assets/www/index.html"
+        private const val ERROR_URL = "https://appassets.androidplatform.net/assets/www/error.html"
         private const val ASSET_HOST = "appassets.androidplatform.net"
         private const val REQUEST_EXPORT = 41
         private const val REQUEST_IMPORT = 42
         private const val REQUEST_FILE = 43
-        private const val STATE_LIVE = "liveMode"
+        private const val STATE_MODE = "appMode"
+        private const val PREFS = "aliaspaces.mobile"
+        private const val PREF_MODE = "lastMode"
+        private const val PREF_WEBSITE_URL = "lastWebsiteUrl"
 
         fun isProductUrl(url: String): Boolean {
             val host = Uri.parse(url).host ?: return false

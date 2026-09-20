@@ -6,9 +6,10 @@
     "studio",
     "briefs",
     "schedule",
-    "discovery",
     "agent-board",
     "platform-queue",
+    "fan-inbox",
+    "business-settings",
   ]);
   const AUTOMATION_FILES = Object.freeze([
     "provider-setup.html",
@@ -31,6 +32,9 @@
     "button[onclick*=\"openHQ(\"]",
     "button[onclick*=\"openComposer(\"]",
     "button[onclick*=\"ownerAppMobileChat(\"]",
+    "button[onclick*=\"siteGo('fan-inbox')\"]",
+    "button[onclick*=\"siteGo('business-settings')\"]",
+    "button[onclick*=\"go('fan-inbox')\"]",
     "a[href*='provider-setup.html']",
     "#sdPanel",
     "[data-view='briefs']",

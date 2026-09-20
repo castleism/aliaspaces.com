@@ -9,8 +9,9 @@ anything.
   `index.html`, `404.html`, `CNAME`, `.nojekyll`. Preserve it.
 - The Pages workflow publishes those four files from `main`. Do not add
   application source to that artifact.
-- Social product work lives under `apps/`. The first isolated mobile
-  surface is `apps/social-mobile/`.
+- Social product work lives under `apps/`. The isolated mobile surface is
+  `apps/social-mobile/`: Local demo, Website WebView, and first-party
+  Social client (`live.html`).
 - `split/social-platform-20260824` holds the earlier extraction workbench
   (profile crop) and product-boundary docs. Do not copy fused MyPersonas
   pages, automation, billing, or provider functions into this repository.

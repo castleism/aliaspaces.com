@@ -1,7 +1,8 @@
 # Milestone 2 — authenticated multi-user storage, authorization, and moderation
 
-Milestone 1 is a **local/demo** device store. It does not authenticate, sync,
-or moderate across users. This document is the concrete next milestone.
+Milestone 1 is a **local/demo** device store. Milestone 1.5 is the live
+website WebView. This document is the authenticated first-party client
+and the remaining server work.
 
 ## Goal
 
@@ -35,6 +36,28 @@ social records while keeping AliaSpaces inside its product boundary.
    - Import of milestone 1 JSON is an explicit owner migration, not a silent
      network publish.
 
+## Done in this checkout (client slice)
+
+- First-party client (`apps/social-mobile/src/live/social-client.js`) over
+  the public project `nwsqyuucwzihruszocge` and publishable key.
+- Email/password Auth, `my_personas` identity projection, public handle
+  lookup, owner posts, reactions, comments, and
+  `set_persona_visibility_rule` for account-wide block/mute.
+- Fail-closed unsigned writes. Automation RPCs rejected.
+- `save_persona_post` labeled review-gated, not auto-published.
+- Android Social tab, last mode, deep links, offline/error chrome.
+- Tests use a fixture transport. No production writes from CI.
+
+## Still owner-gated
+
+- Dashboard Auth redirect URIs / audience for magic-link and Google so
+  those methods can return into the app origin.
+- Production SQL for server-side block projections (client filter is
+  defense-in-depth only).
+- A content-report RPC and staff queue. The live site currently exposes
+  `report_client_error` (telemetry), not a moderation queue.
+- Real-phone MFA, two-account privacy, store builds, and merge/deploy.
+
 ## Out of scope
 
 - Store submission or production DNS/Pages cutover.
@@ -54,13 +77,16 @@ social records while keeping AliaSpaces inside its product boundary.
 - No milestone 1 "local demo" banner remains on a signed-in production
   build; a staging build may keep a staging banner.
 
-## Suggested first slices
+The first two signed-in checks need an owner phone or staging accounts.
+The client already fails closed without a session and hides blocked
+fixture posts.
 
-1. Read-only authenticated persona list against a staging projection.
-2. Create-post RPC with owner and acting-persona checks.
-3. Server-side block table + projection filters.
-4. Report RPC + staff queue read model.
-5. Migration notes for importing a milestone 1 export as an owner-owned
+## Suggested remaining slices
+
+1. Owner adds Auth redirect URIs for the app / Custom Tabs origin.
+2. Server-side block table + projection filters (production migration).
+3. Report RPC + staff queue read model.
+4. Migration notes for importing a milestone 1 export as an owner-owned
    draft set, never as other people's accounts.
 
 ## Owner gates

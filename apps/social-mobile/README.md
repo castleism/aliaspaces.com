@@ -1,15 +1,20 @@
 # AliaSpaces mobile app
 
-Isolated from the `aliaspaces.com` GitHub Pages front door. The Android package
-has two modes:
+Isolated from the `aliaspaces.com` GitHub Pages front door. The Android
+package has three modes:
 
-1. **Live (APK default)** — the real website at `https://mypersonas.online/`,
-   same accounts and database. Automation studio, agent board, provider setup,
-   and scheduled publishing controls are hidden in the app.
-2. **Local demo** — device-only profiles/posts/reactions/reports/blocks. This
-   mode still says local/demo and does not talk to the website.
+1. **Website (APK default)** — the real site at `https://mypersonas.online/`,
+   same accounts and database. Automation studio, agent board, provider
+   setup, fan inbox, business settings, and scheduled publishing controls
+   are hidden in the app.
+2. **Social** — first-party client (`live.html`) over the same public
+   Auth/database. Email/password sign-in, owned personas, public handle
+   lookup, review-gated posts, reactions, and account blocks. Automation
+   RPCs are rejected. "Signed in" only after Auth verifies a session.
+3. **Local demo** — device-only profiles/posts/reactions/reports/blocks.
+   This mode still says local/demo and does not talk to the website.
 
-## Live mode — what is real
+## Website mode — what is real
 
 - Sign in with the same AliaSpaces / MyPersonas account used on the website
   (email, password, magic link). Google may be blocked inside the WebView;
@@ -19,14 +24,26 @@ has two modes:
   posts, albums, and other website social surfaces run in the live site.
 - Cookies persist in the app WebView for that website origin.
 
-## Live mode — what this is not
+## Social mode — what is real
 
-- Not a rewritten native client with its own API layer.
+- Same public Supabase project the website already publishes.
+- Fail-closed owner RPCs: `my_personas`, `save_persona_post`,
+  `delete_persona_post`, `toggle_persona_reaction`,
+  `set_persona_visibility_rule`, friendships.
+- Posts submitted here still need the website review/publish gates.
+- Deep links: `https://mypersonas.online/…` opens Website mode;
+  `aliaspaces://social` and `aliaspaces://local` open those tabs.
+- Last mode is restored. Offline shows an error, not a fake session.
+
+## What this is not
+
 - Not a copy of the fused website into this repository.
-- Not the automation platform. Matrix/studio, briefings, four-channel
-  schedule, agent board, HQ assistant, composer, and provider setup stay on
-  the website control plane and are hidden or redirected to Home.
-- No production secrets. The app opens the public website.
+- Not the automation platform.
+- Not a staff moderation queue. The live API has error telemetry, not a
+  content-report RPC.
+- Not production SQL for server-side block projections. The client still
+  filters blocked authors as defense-in-depth.
+- No production secrets. The app uses the public publishable key.
 
 ## Local demo
 
@@ -40,10 +57,16 @@ Export/import JSON if a differently signed APK is installed beside this one.
 npm test
 ```
 
+First-party fixture smoke (no production writes):
+
+```bash
+node apps/social-mobile/scripts/live-client-smoke.mjs
+```
+
 ## Android debug package
 
 Package id `com.aliaspaces.social.local` (same-key updates keep local demo
-storage and live-site cookies).
+storage and live-site cookies). Version `0.3.0-social`.
 
 ```bash
 apps/social-mobile/scripts/build-apk.sh

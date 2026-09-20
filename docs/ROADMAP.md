@@ -36,50 +36,68 @@ not claimed.
 - [x] Export/import JSON for data preservation when Android signing differs.
 - [x] Reproducible Android debug build via
       `apps/social-mobile/scripts/build-apk.sh`.
-- [x] Installable Android debug APK, now `0.2.0-live` (versionCode 2),
-      same package `com.aliaspaces.social.local` and committed debug
-      keystore so updates keep local demo storage and website cookies.
+
+### Milestone 1.5 — live website APK
+
+Status: **implemented in this checkout**.
+
+- [x] Website mode opens `https://mypersonas.online/` with cookies, so
+      sign-in and social data are the website’s Supabase project.
+- [x] Automation studio, briefings, schedule, agent board, HQ, composer,
+      provider setup, fan inbox, and business settings are hidden or
+      redirected to Home in the website shell. Discovery stays social.
+- [x] Local demo remains a separate tab and still says local/demo.
+- [x] Chrome button is an explicit separate browser session. Google login
+      inside WebView may fail; that is not treated as app sign-in success.
+
+### Milestone 2 first slice — first-party social client
+
+Status: **implemented in this checkout** as far as an agent can go without
+owner-gated Auth dashboard, production SQL, or a real phone.
+
+- [x] First-party client at `apps/social-mobile/live.html` over the public
+      website project and publishable key. No service-role key.
+- [x] Allowed social RPCs only: personas, posts, reactions, comments,
+      account blocks/mutes, friendships. Automation RPCs are rejected.
+- [x] Fail-closed adapters: unsigned writes do not run; "signed in" is
+      claimed only after Auth returns a user id and access token.
+- [x] `identity-projection` rows (`account_id`, `persona_id`, `handle`,
+      `lifecycle_state`) from `my_personas`.
+- [x] Client-side block/mute filter. Server-side block projections and a
+      staff report queue still need owner-gated production work.
+- [x] Posts submitted through `save_persona_post` stay review-gated and
+      are not described as auto-published.
+- [x] Fixture transport for tests/smoke never writes to production.
+- [x] Android **Social** tab, last-mode restore, https/aliaspaces deep
+      links, offline banner, and load-error page.
+- [x] Installable Android debug APK `0.3.0-social` (versionCode 3), same
+      package `com.aliaspaces.social.local` and committed debug keystore.
 
 Browser smoke verified in this cloud checkout (390×844 Chromium, not a
 physical phone and not the owner's local phone-test builds):
 
 - Local/demo banner is visible and states there are no online users.
 - Two local profiles can post; a block hides the other author's post for
-  both sides (`1 blocked profile excluded`).
-- Screenshots: `aliaspaces-local-demo-banner.png`,
-  `aliaspaces-local-south-feed.png`,
-  `aliaspaces-local-feed-after-block.png`.
+  both sides.
+- Live website shell hides Matrix/studio and keeps Sign in.
+- First-party Social tab fixture mode signs in, blocks, and review-gates
+  a post without touching production.
 
-### Milestone 1.5 — live website APK (this session)
+## Next milestones (owner-gated or later product work)
 
-Status: **implemented in this checkout**. The APK default is the live
-AliaSpaces website, not a second database.
-
-- [x] Live mode opens `https://mypersonas.online/` with cookies, so sign-in
-      and social data are the website’s Supabase project.
-- [x] Automation studio, briefings, schedule, agent board, HQ, composer, and
-      provider setup are hidden or redirected to Home in the app shell.
-- [x] Local demo remains a separate tab and still says local/demo.
-- [x] Chrome button is an explicit separate browser session. Google login
-      inside WebView may fail; that is not treated as app sign-in success.
-- [ ] Owner-gated: real-phone Google/email login, MFA, and two-account
-      privacy against this APK. Not claimed from this cloud checkout.
-
-## Next milestones
-
-1. **Milestone 2 — native social client over shared contracts**, not only
-   a website WebView. Concrete contract:
-   [docs/MOBILE-MILESTONE-2.md](MOBILE-MILESTONE-2.md).
-   Live WebView mode already uses the website database; milestone 2 still
-   needs a first-party client, server-side block projections, and a staff
-   moderation queue.
+1. **Milestone 2 remainder — production authorization and moderation**
+   Concrete contract: [docs/MOBILE-MILESTONE-2.md](MOBILE-MILESTONE-2.md).
+   Still needs server-side block projections, a content-report RPC, and a
+   staff queue. Those are production migrations, not client work.
 2. **Public read-only persona page** consuming a versioned public projection
    with opaque media identifiers (from the extraction plan on
-   `split/social-platform-20260824`).
-3. **Signed-in identity shell** over the shared Auth authority, with audience
-   and origin checks. Not a copy of the fused MyPersonas page.
-4. **PWA / origin identity** after staging gates, still without changing the
-   live redirect until cutover is approved.
+   `split/social-platform-20260824`). Putting that on `aliaspaces.com`
+   would change the Pages allowlist and is owner-gated.
+3. **Signed-in identity shell** with dashboard audience/origin redirects
+   for magic-link and Google return URLs. Email/password already works
+   in the first-party client; OAuth return URIs do not.
+4. **PWA / origin identity** after staging gates, still without changing
+   the live redirect until cutover is approved.
 
 ## Concrete blockers
 
@@ -93,4 +111,4 @@ AliaSpaces website, not a second database.
 - Store listings and submissions wait for a later owner pass. Both store
   accounts are recorded as verified; Google is personal; do not submit.
 - Two-account privacy, MFA recovery, and live moderation staffing are
-  milestone 2+ gates, not implied by local persistence.
+  milestone 2+ gates, not implied by the first-party client or local store.

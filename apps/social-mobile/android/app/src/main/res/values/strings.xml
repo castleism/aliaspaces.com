@@ -1,9 +1,13 @@
 <resources>
     <string name="app_name">AliaSpaces</string>
-    <string name="mode_live">Live</string>
+    <string name="mode_website">Website</string>
+    <string name="mode_social">Social</string>
     <string name="mode_local">Local</string>
     <string name="open_chrome">Chrome</string>
-    <string name="live_mode_hint">Live website mode: same AliaSpaces accounts and database as mypersonas.online. Automation studio is hidden here.</string>
+    <string name="website_mode_hint">Website mode: same AliaSpaces accounts and database as mypersonas.online. Automation studio is hidden here.</string>
+    <string name="social_mode_hint">First-party social client. Signed in only after Auth verifies a session. Posts still go through review gates.</string>
     <string name="local_mode_hint">Local demo only. Nothing is sent to the website database.</string>
-    <string name="google_login_hint">If Google sign-in is blocked inside the app, use Chrome. Email, password, and magic link stay in this app.</string>
+    <string name="google_login_hint">If Google sign-in is blocked inside the app, use Chrome. Email and password stay in this app. Chrome is a separate session.</string>
+    <string name="offline_hint">This device is offline. Live website and social client cannot reach the database. Local demo still works.</string>
+    <string name="load_error_hint">The live page did not load. Check the network, then tap Website or Social again.</string>
 </resources>

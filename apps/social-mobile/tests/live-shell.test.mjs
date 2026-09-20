@@ -28,8 +28,10 @@ test("automation routes are redirected and social landing stays the live site", 
   const { AliaSpacesLiveShell: shell } = await load("social-shell.js");
   assert.equal(shell.isAutomationRoute("#/studio"), true);
   assert.equal(shell.isAutomationRoute("#/agent-board"), true);
+  assert.equal(shell.isAutomationRoute("#/fan-inbox"), true);
   assert.equal(shell.isAutomationRoute("#/owner"), false);
   assert.equal(shell.isAutomationRoute("#/p/demo"), false);
+  assert.equal(shell.isAutomationRoute("#/discovery"), false);
   assert.equal(shell.isAutomationFile("/provider-setup.html"), true);
   assert.equal(shell.socialLanding(), "https://mypersonas.online/");
 });

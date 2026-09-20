@@ -43,6 +43,10 @@ test("mobile surface labels itself local/demo and does not claim network success
   assert.match(app, /AliaSpacesLocal/);
   assert.match(app, /Device identity switcher/);
   assert.doesNotMatch(app, /fetch\s*\(|XMLHttpRequest|WebSocket|sendBeacon/);
+  const liveHtml = await readFile(path.join(appRoot, "live.html"), "utf8");
+  assert.match(liveHtml, /First-party social client/);
+  assert.match(liveHtml, /connect-src https:\/\/nwsqyuucwzihruszocge\.supabase\.co/);
+  assert.doesNotMatch(liveHtml, /connect-src 'none'/);
   assert.match(css, /safe-area/);
 });
 

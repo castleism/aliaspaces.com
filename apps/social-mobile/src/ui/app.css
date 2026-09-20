@@ -64,6 +64,16 @@ button { min-height: 44px; }
   font-size: 13px;
   line-height: 1.45;
 }
+.banner.is-live {
+  background: #e7f7ee;
+  border-color: #b7e0c6;
+  color: #1f6b4a;
+}
+.banner.is-fixture {
+  background: #e8f4ff;
+  border-color: #b9d7ee;
+  color: #1d4d73;
+}
 
 .sheet { padding: 0 16px 24px; flex: 1; }
 .panel { display: grid; gap: 12px; }
