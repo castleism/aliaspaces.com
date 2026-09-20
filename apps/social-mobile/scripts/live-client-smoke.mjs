@@ -44,9 +44,9 @@ try {
 
   await page.getByRole("button", { name: "You" }).click();
   await page.getByRole("button", { name: "Sign in" }).click();
-  await page.getByText("Verified session").waitFor();
+  await page.locator("#toast").getByText("Verified session").waitFor();
   assert.match(await page.locator("#actorLabel").innerText(), /signed in/i);
-  await page.getByText("@fixture_north").waitFor();
+  await page.locator("#panel-you").getByText("@fixture_north").waitFor();
 
   await page.getByRole("button", { name: "Discover" }).click();
   await page.locator("#panel-discover article", { hasText: "@fixture_south" }).getByRole("button", { name: "Open" }).click();
@@ -59,13 +59,14 @@ try {
   await page.getByRole("button", { name: "Look up" }).click();
   await page.waitForTimeout(200);
   assert.equal(await page.locator("#panel-discover").getByText("Fixture post from South").count(), 0);
+  assert.equal(await page.locator("#panel-discover").getByText("@fixture_south").count(), 0);
+  await page.screenshot({ path: "/opt/cursor/artifacts/aliaspaces-social-client-after-block.png", fullPage: true });
 
   await page.getByRole("button", { name: "Post" }).click();
   await page.locator("textarea[name='body']").fill("Fixture review draft from smoke");
   await page.getByRole("button", { name: "Submit for review" }).click();
-  await page.getByText(/not auto-published/i).waitFor();
-
-  await page.screenshot({ path: "/opt/cursor/artifacts/aliaspaces-social-client-after-block.png", fullPage: true });
+  await page.locator("#toast").getByText(/not auto-published/i).waitFor();
+  await page.screenshot({ path: "/opt/cursor/artifacts/aliaspaces-social-client-review-gated.png", fullPage: true });
   console.log(JSON.stringify({
     ok: true,
     signedIn: true,

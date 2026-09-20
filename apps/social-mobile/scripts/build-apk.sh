@@ -69,8 +69,10 @@ if [[ -z "$apk" ]]; then
 fi
 
 cp "$apk" "$dist/AliaSpaces-local-demo-debug.apk"
+cp "$apk" "$dist/AliaSpaces-social-debug.apk"
 if [[ -d /opt/cursor/artifacts ]]; then
   cp "$apk" /opt/cursor/artifacts/AliaSpaces-local-demo-debug.apk
+  cp "$apk" /opt/cursor/artifacts/AliaSpaces-social-debug.apk
 fi
 
 keytool -printcert -jarfile "$dist/AliaSpaces-local-demo-debug.apk" || true

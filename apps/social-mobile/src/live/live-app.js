@@ -113,8 +113,21 @@
     </article>`;
   }
 
+  function hiddenPersonaKeys() {
+    return new Set(blocks.flatMap((item) => [
+      item.blocked_persona,
+      item.blockedPersonaId,
+      item.other_persona_id,
+    ].filter(Boolean)));
+  }
+
+  function visiblePublicPersonas() {
+    const hidden = hiddenPersonaKeys();
+    return publicPersonas.filter((persona) => !hidden.has(persona.id) && !hidden.has(persona.handle));
+  }
+
   function renderDiscover() {
-    const cards = publicPersonas.map((persona) => personaCard(persona)).join("");
+    const cards = visiblePublicPersonas().map((persona) => personaCard(persona)).join("");
     const open = openPersona ? `
       <div class="card">
         <h2>@${escapeHtml(openPersona.handle)}</h2>
@@ -313,6 +326,13 @@
       return;
     }
     openPersona = personaResult.data;
+    if (hiddenPersonaKeys().has(openPersona.id) || hiddenPersonaKeys().has(openPersona.handle)) {
+      openPersona = null;
+      openPosts = [];
+      fail({ error: { message: "That persona is blocked for this account." } }, "Blocked persona stays hidden.");
+      render();
+      return;
+    }
     const posts = await client.listPublicPosts(openPersona.id);
     const raw = posts.ok && Array.isArray(posts.data) ? posts.data : [];
     openPosts = client.visiblePosts(raw, blocks.map((item) => ({
