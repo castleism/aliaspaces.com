@@ -41,7 +41,8 @@ automation. It is not a signed-in real-phone session.
 - Block hides the other fixture author's post
 - `save_persona_post` is labeled review-gated / not auto-published
 - Screenshots: `aliaspaces-social-client-signed-out.png`,
-  `aliaspaces-social-client-after-block.png`
+  `aliaspaces-social-client-after-block.png`,
+  `aliaspaces-social-client-review-gated.png`
 
 Read-only live check (no writes): anonymous `my_personas` is HTTP 401.
 
