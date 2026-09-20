@@ -11,4 +11,6 @@ apps/social-mobile/android/build/
 apps/social-mobile/android/app/build/
 apps/social-mobile/android/local.properties
 apps/social-mobile/android/app/src/main/assets/www/
+apps/social-mobile/dist/*.apk
+*.apk
 .pages-artifact/

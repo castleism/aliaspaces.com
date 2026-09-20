@@ -36,14 +36,22 @@ not claimed.
 - [x] Export/import JSON for data preservation when Android signing differs.
 - [x] Reproducible Android debug build via
       `apps/social-mobile/scripts/build-apk.sh`.
-- [x] Installable Android debug APK built in this environment when the
-      Android SDK can be installed. See the PR and
-      `apps/social-mobile/README.md` for the artifact path and signing note.
+- [x] Installable Android debug APK built in this environment:
+      `com.aliaspaces.social.local` `0.1.0-local-demo`, minSdk 24, no
+      `INTERNET` permission, APK Signature Scheme v2 verified with the
+      committed `apps/social-mobile/android/debug.keystore`. Artifact:
+      `/opt/cursor/artifacts/AliaSpaces-local-demo-debug.apk`.
+      Rebuild with `apps/social-mobile/scripts/build-apk.sh`.
 
-Browser smoke (this agent): create two local profiles, post, react, report,
-block, confirm the blocked author disappears from both feeds, export JSON.
-This is not signed-in real-phone QA and does not use the owner's local
-phone-test builds.
+Browser smoke verified in this cloud checkout (390×844 Chromium, not a
+physical phone and not the owner's local phone-test builds):
+
+- Local/demo banner is visible and states there are no online users.
+- Two local profiles can post; a block hides the other author's post for
+  both sides (`1 blocked profile excluded`).
+- Screenshots: `aliaspaces-local-demo-banner.png`,
+  `aliaspaces-local-south-feed.png`,
+  `aliaspaces-local-feed-after-block.png`.
 
 ## Next milestones
 

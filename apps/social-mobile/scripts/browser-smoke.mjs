@@ -40,6 +40,7 @@ try {
   const banner = await page.locator(".banner").innerText();
   assert.match(banner, /local\/demo/i);
   assert.match(banner, /no online users/i);
+  await page.screenshot({ path: "/opt/cursor/artifacts/aliaspaces-local-demo-banner.png", fullPage: true });
 
   async function createProfile(handle, name) {
     await page.getByRole("button", { name: "Profiles" }).click();
@@ -68,13 +69,14 @@ try {
   await page.locator("article", { hasText: "North local smoke post" }).getByRole("button", { name: "Block author" }).click();
 
   await page.getByRole("button", { name: "Feed" }).click();
-  await page.getByText("South local smoke post").waitFor();
-  assert.equal(await page.getByText("North local smoke post").count(), 0);
+  await page.locator("#panel-feed").getByText("South local smoke post").waitFor();
+  assert.equal(await page.locator("#panel-feed").getByText("North local smoke post").count(), 0);
+  await page.screenshot({ path: "/opt/cursor/artifacts/aliaspaces-local-south-feed.png", fullPage: true });
 
   await page.getByRole("button", { name: "You" }).click();
-  await page.locator("article", { hasText: "@smoke_north" }).getByRole("button", { name: "Act as this profile" }).click();
+  await page.locator("#panel-you article", { hasText: "@smoke_north" }).getByRole("button", { name: "Act as this profile" }).click();
   await page.getByRole("button", { name: "Feed" }).click();
-  assert.equal(await page.getByText("South local smoke post").count(), 0);
+  assert.equal(await page.locator("#panel-feed").getByText("South local smoke post").count(), 0);
 
   evidence.push({
     banner,

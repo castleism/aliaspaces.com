@@ -35,6 +35,7 @@ function seedTwoProfiles(api) {
     bio: "Second local test profile",
   }, { id: "prf_south" });
   state = south.state;
+  assert.equal(state.activeProfileId, "prf_south");
   const west = api.createProfile(state, {
     handle: "west",
     displayName: "West",

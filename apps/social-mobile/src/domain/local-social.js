@@ -265,7 +265,7 @@
       updatedAt: input.updatedAt || nowIso(options.clock),
     };
     next.profiles.push(profile);
-    if (!next.activeProfileId) next.activeProfileId = profile.id;
+    next.activeProfileId = profile.id;
     validateState(next);
     return { state: next, profile };
   }

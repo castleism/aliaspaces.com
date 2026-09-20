@@ -20,7 +20,13 @@ if [[ ! -x "$sdk_root/cmdline-tools/latest/bin/sdkmanager" ]]; then
   rm -rf "$tmp"
 fi
 
-yes | "$sdk_root/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$sdk_root" --licenses >/dev/null
+mkdir -p "$sdk_root/licenses"
+cat > "$sdk_root/licenses/android-sdk-license" <<'EOF'
+24333f8a63b6825ea9c5514f83c2829b004d1fee
+EOF
+cat > "$sdk_root/licenses/android-sdk-preview-license" <<'EOF'
+84831b9409646a7d528cd98f8d76f316ba667e4
+EOF
 "$sdk_root/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$sdk_root" \
   "platform-tools" \
   "platforms;android-34" \

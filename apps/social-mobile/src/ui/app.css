@@ -67,6 +67,7 @@ button { min-height: 44px; }
 
 .sheet { padding: 0 16px 24px; flex: 1; }
 .panel { display: grid; gap: 12px; }
+.panel[hidden] { display: none !important; }
 .card, .empty, form, .list-item {
   background: var(--card);
   border: 1px solid var(--line);
