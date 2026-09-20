@@ -8,3 +8,7 @@ valid HTTPS endpoint while the application remains canonical at
 redirecting. No analytics, cookies, forms, credentials, or private application
 data are present here. The Pages workflow publishes only the four explicit
 public files.
+
+The isolated local/demo social mobile prototype lives in
+`apps/social-mobile/` and is not part of the Pages artifact. See
+`docs/ROADMAP.md` and `AGENTS.md`.

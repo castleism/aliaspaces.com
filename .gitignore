@@ -1,0 +1,14 @@
+node_modules/
+coverage/
+*.log
+.DS_Store
+Thumbs.db
+.env
+.env.*
+!.env.example
+apps/social-mobile/android/.gradle/
+apps/social-mobile/android/build/
+apps/social-mobile/android/app/build/
+apps/social-mobile/android/local.properties
+apps/social-mobile/android/app/src/main/assets/www/
+.pages-artifact/

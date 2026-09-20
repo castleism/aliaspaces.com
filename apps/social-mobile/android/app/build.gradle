@@ -1,0 +1,65 @@
+plugins {
+    id "com.android.application"
+    id "org.jetbrains.kotlin.android"
+}
+
+def keystoreFile = file("../debug.keystore")
+
+android {
+    namespace "com.aliaspaces.social.local"
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.aliaspaces.social.local"
+        minSdk 24
+        targetSdk 34
+        versionCode 1
+        versionName "0.1.0-local-demo"
+    }
+
+    signingConfigs {
+        localDebug {
+            storeFile keystoreFile
+            storePassword "android"
+            keyAlias "aliaspaceslocal"
+            keyPassword "android"
+        }
+    }
+
+    buildTypes {
+        debug {
+            signingConfig signingConfigs.localDebug
+            minifyEnabled false
+        }
+        release {
+            signingConfig signingConfigs.localDebug
+            minifyEnabled false
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+}
+
+dependencies {
+    implementation "androidx.appcompat:appcompat:1.7.0"
+    implementation "androidx.webkit:webkit:1.11.0"
+}
+
+tasks.register("copyWebAssets", Copy) {
+    from("${rootProject.projectDir}/..") {
+        include "index.html"
+        include "src/**"
+    }
+    into("${projectDir}/src/main/assets/www")
+}
+
+tasks.named("preBuild").configure {
+    dependsOn("copyWebAssets")
+}
