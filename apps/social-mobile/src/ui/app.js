@@ -267,6 +267,10 @@
         <p class="meta">Fixture handles: ${fixtures.profiles.map((item) => `@${item.handle}`).join(", ")}</p>
       </div>
       <div class="card">
+        <h2>Live website is a separate mode</h2>
+        <p>The Android app’s Live tab opens mypersonas.online. This Local tab never signs in and never writes to that database.</p>
+      </div>
+      <div class="card">
         <h2>If the Android signing key changes</h2>
         <p>A differently signed APK installs beside this one and does not inherit storage. Export JSON from the old install and import it here, or keep both installs while you compare.</p>
       </div>

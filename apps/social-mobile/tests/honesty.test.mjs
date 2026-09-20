@@ -18,6 +18,7 @@ async function filesBelow(relative, extensions) {
       throw error;
     }
     for (const entry of entries) {
+      if (entry.name === "live") continue;
       const target = path.join(current, entry.name);
       if (entry.isDirectory()) await walk(target);
       else if (extensions.has(path.extname(entry.name))) output.push(target);

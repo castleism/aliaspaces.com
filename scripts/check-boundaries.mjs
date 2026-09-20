@@ -29,7 +29,7 @@ async function filesBelow(relative) {
       throw error;
     }
     for (const entry of entries) {
-      if (entry.name === "build" || entry.name === ".gradle" || entry.name === "www" || entry.name === "tests") continue;
+      if (entry.name === "build" || entry.name === ".gradle" || entry.name === "www" || entry.name === "tests" || entry.name === "live") continue;
       const target = path.join(current, entry.name);
       if (entry.isDirectory()) await walk(target);
       else if (codeExtensions.has(path.extname(entry.name))) output.push(target);

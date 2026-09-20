@@ -1,3 +1,9 @@
 <resources>
-    <string name="app_name">AliaSpaces Local Demo</string>
+    <string name="app_name">AliaSpaces</string>
+    <string name="mode_live">Live</string>
+    <string name="mode_local">Local</string>
+    <string name="open_chrome">Chrome</string>
+    <string name="live_mode_hint">Live website mode: same AliaSpaces accounts and database as mypersonas.online. Automation studio is hidden here.</string>
+    <string name="local_mode_hint">Local demo only. Nothing is sent to the website database.</string>
+    <string name="google_login_hint">If Google sign-in is blocked inside the app, use Chrome. Email, password, and magic link stay in this app.</string>
 </resources>

@@ -36,12 +36,9 @@ not claimed.
 - [x] Export/import JSON for data preservation when Android signing differs.
 - [x] Reproducible Android debug build via
       `apps/social-mobile/scripts/build-apk.sh`.
-- [x] Installable Android debug APK built in this environment:
-      `com.aliaspaces.social.local` `0.1.0-local-demo`, minSdk 24, no
-      `INTERNET` permission, APK Signature Scheme v2 verified with the
-      committed `apps/social-mobile/android/debug.keystore`. Artifact:
-      `/opt/cursor/artifacts/AliaSpaces-local-demo-debug.apk`.
-      Rebuild with `apps/social-mobile/scripts/build-apk.sh`.
+- [x] Installable Android debug APK, now `0.2.0-live` (versionCode 2),
+      same package `com.aliaspaces.social.local` and committed debug
+      keystore so updates keep local demo storage and website cookies.
 
 Browser smoke verified in this cloud checkout (390×844 Chromium, not a
 physical phone and not the owner's local phone-test builds):
@@ -53,11 +50,29 @@ physical phone and not the owner's local phone-test builds):
   `aliaspaces-local-south-feed.png`,
   `aliaspaces-local-feed-after-block.png`.
 
+### Milestone 1.5 — live website APK (this session)
+
+Status: **implemented in this checkout**. The APK default is the live
+AliaSpaces website, not a second database.
+
+- [x] Live mode opens `https://mypersonas.online/` with cookies, so sign-in
+      and social data are the website’s Supabase project.
+- [x] Automation studio, briefings, schedule, agent board, HQ, composer, and
+      provider setup are hidden or redirected to Home in the app shell.
+- [x] Local demo remains a separate tab and still says local/demo.
+- [x] Chrome button is an explicit separate browser session. Google login
+      inside WebView may fail; that is not treated as app sign-in success.
+- [ ] Owner-gated: real-phone Google/email login, MFA, and two-account
+      privacy against this APK. Not claimed from this cloud checkout.
+
 ## Next milestones
 
-1. **Milestone 2 — authenticated multi-user storage, authorization, and
-   moderation.** Concrete contract:
+1. **Milestone 2 — native social client over shared contracts**, not only
+   a website WebView. Concrete contract:
    [docs/MOBILE-MILESTONE-2.md](MOBILE-MILESTONE-2.md).
+   Live WebView mode already uses the website database; milestone 2 still
+   needs a first-party client, server-side block projections, and a staff
+   moderation queue.
 2. **Public read-only persona page** consuming a versioned public projection
    with opaque media identifiers (from the extraction plan on
    `split/social-platform-20260824`).

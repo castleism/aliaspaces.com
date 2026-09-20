@@ -13,8 +13,8 @@ android {
         applicationId "com.aliaspaces.social.local"
         minSdk 24
         targetSdk 34
-        versionCode 1
-        versionName "0.1.0-local-demo"
+        versionCode 2
+        versionName "0.2.0-live"
     }
 
     signingConfigs {
@@ -49,7 +49,9 @@ android {
 
 dependencies {
     implementation "androidx.appcompat:appcompat:1.7.0"
+    implementation "androidx.activity:activity-ktx:1.9.2"
     implementation "androidx.webkit:webkit:1.11.0"
+    implementation "androidx.browser:browser:1.8.0"
 }
 
 tasks.register("copyWebAssets", Copy) {

@@ -28,7 +28,8 @@ lifecycle are consumed as versioned contracts.
 - Implement; do not only plan.
 - Keep approved public copy and the front-door redirect behavior.
 - Local prototypes must say **local/demo**. Do not invent online users or
-  network success.
+  network success. Live website mode may open `mypersonas.online` and must
+  say so; do not hide a failed Google/WebView login as success.
 - Separate user-created records from fixtures.
 - Preserve user data. Provide export/import. If Android signing differs,
   tell the owner to keep both installs or import JSON.

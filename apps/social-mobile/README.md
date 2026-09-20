@@ -1,79 +1,55 @@
-# AliaSpaces local social mobile prototype
+# AliaSpaces mobile app
 
-Isolated first-milestone surface for the AliaSpaces social product. It is a
-**local demo**: profiles, posts, reactions, reports, and blocks persist on the
-device only. The UI says this plainly. There are no online users and no
-network success path.
+Isolated from the `aliaspaces.com` GitHub Pages front door. The Android package
+has two modes:
 
-This directory is not part of the `aliaspaces.com` GitHub Pages front door.
+1. **Live (APK default)** — the real website at `https://mypersonas.online/`,
+   same accounts and database. Automation studio, agent board, provider setup,
+   and scheduled publishing controls are hidden in the app.
+2. **Local demo** — device-only profiles/posts/reactions/reports/blocks. This
+   mode still says local/demo and does not talk to the website.
 
-## What is real in this milestone
+## Live mode — what is real
 
-- Create and switch local profiles (device personas, not accounts).
-- Persist posts, reactions, reports, and blocks in `localStorage`.
-- Exclude blocked content from feed, profile lists, reactions, and reports
-  for **both** sides of a block.
-- Export and import a versioned JSON bundle so a differently signed Android
-  install can be tested side-by-side or restored manually.
-- Optional **demo fixtures** labeled `source: fixture`. They are generated on
-  the device and are not fake online users.
+- Sign in with the same AliaSpaces / MyPersonas account used on the website
+  (email, password, magic link). Google may be blocked inside the WebView;
+  use **Chrome** in the app bar if that happens. Chrome is a separate browser
+  session, not a silent success inside the app.
+- Persona discovery, pages, owner home, publication review, follows/friends,
+  posts, albums, and other website social surfaces run in the live site.
+- Cookies persist in the app WebView for that website origin.
 
-## What is not real
+## Live mode — what this is not
 
-- No authentication, no multi-device sync, no live moderation queue.
-- No fetch, WebSocket, or upload.
-- Installing a differently signed APK creates a separate Android app identity
-  and does not inherit storage. Use export/import.
+- Not a rewritten native client with its own API layer.
+- Not a copy of the fused website into this repository.
+- Not the automation platform. Matrix/studio, briefings, four-channel
+  schedule, agent board, HQ assistant, composer, and provider setup stay on
+  the website control plane and are hidden or redirected to Home.
+- No production secrets. The app opens the public website.
 
-## Run in a browser
+## Local demo
 
-Open `apps/social-mobile/index.html` in a current browser, or from the
-repository root:
-
-```bash
-npx --yes serve apps/social-mobile
-```
-
-Create two local profiles, post as each, then block one from the other. The
-blocked author's posts and reactions must disappear for both profiles.
+Open `apps/social-mobile/index.html` or tap **Local** in the APK. Create two
+local profiles, post, then block. Hidden content must disappear both ways.
+Export/import JSON if a differently signed APK is installed beside this one.
 
 ## Tests
-
-From the repository root:
 
 ```bash
 npm test
 ```
 
-Or only this app:
-
-```bash
-node --test apps/social-mobile/tests/*.test.mjs
-```
-
 ## Android debug package
 
-The package id is `com.aliaspaces.social.local`. The committed debug keystore
-keeps the same signature across rebuilds on this branch so updates can keep
-local data.
+Package id `com.aliaspaces.social.local` (same-key updates keep local demo
+storage and live-site cookies).
 
 ```bash
 apps/social-mobile/scripts/build-apk.sh
 ```
 
-The script writes:
+Writes `apps/social-mobile/dist/AliaSpaces-local-demo-debug.apk` and a copy
+under `/opt/cursor/artifacts/` when present.
 
-- `apps/social-mobile/dist/AliaSpaces-local-demo-debug.apk`
-- a copy under `/opt/cursor/artifacts/` when that directory exists
-
-Install with `adb install -r` using the same signing key to preserve data.
-If a phone already has a differently signed prototype, keep that install
-installed and use export/import instead of overwriting it.
-
-Store submission is out of scope. Google Play (personal) and the later
-submission pass are owner-gated.
-
-## Next milestone
-
-See [docs/MOBILE-MILESTONE-2.md](../../docs/MOBILE-MILESTONE-2.md) for
-authenticated multi-user storage, authorization, and moderation.
+Store submission is owner-gated. Google Play is personal; submissions later.
