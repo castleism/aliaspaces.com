@@ -28,6 +28,7 @@ jobs:
           rsync -a --delete \
             --include '/index.html' \
             --include '/404.html' \
+            --include '/favicon.svg' \
             --include '/CNAME' \
             --include '/.nojekyll' \
             --exclude '*' \
