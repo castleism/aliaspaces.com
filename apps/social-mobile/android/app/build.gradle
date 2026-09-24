@@ -13,8 +13,8 @@ android {
         applicationId "com.aliaspaces.social.local"
         minSdk 24
         targetSdk 34
-        versionCode 3
-        versionName "0.3.0-social"
+        versionCode 4
+        versionName "0.4.0-check"
     }
 
     signingConfigs {
@@ -50,6 +50,7 @@ android {
 dependencies {
     implementation "androidx.appcompat:appcompat:1.7.0"
     implementation "androidx.activity:activity-ktx:1.9.2"
+    implementation "androidx.core:core-ktx:1.13.1"
     implementation "androidx.webkit:webkit:1.11.0"
     implementation "androidx.browser:browser:1.8.0"
 }
@@ -58,7 +59,11 @@ tasks.register("copyWebAssets", Copy) {
     from("${rootProject.projectDir}/..") {
         include "index.html"
         include "live.html"
+        include "hub.html"
+        include "persona.html"
         include "error.html"
+        include "hub.webmanifest"
+        include "mark.svg"
         include "src/**"
     }
     into("${projectDir}/src/main/assets/www")

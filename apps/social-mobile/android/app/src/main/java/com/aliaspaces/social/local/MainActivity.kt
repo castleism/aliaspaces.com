@@ -34,13 +34,13 @@ class MainActivity : AppCompatActivity() {
     private lateinit var webView: WebView
     private lateinit var modeLabel: TextView
     private lateinit var offlineBanner: TextView
-    private lateinit var liveButton: Button
+    private lateinit var checkButton: Button
     private lateinit var socialButton: Button
     private lateinit var localButton: Button
-    private var appMode = MODE_WEBSITE
+    private var appMode = MODE_CHECK
     private var pendingExport: String? = null
     private var fileCallback: ValueCallback<Array<Uri>>? = null
-    private lateinit var liveShellJs: String
+    private var bridgeAttached = false
     private lateinit var assetLoader: WebViewAssetLoader
     private var connectivityCallback: ConnectivityManager.NetworkCallback? = null
 
@@ -51,33 +51,30 @@ class MainActivity : AppCompatActivity() {
         webView = findViewById(R.id.webView)
         modeLabel = findViewById(R.id.modeLabel)
         offlineBanner = findViewById(R.id.offlineBanner)
-        liveButton = findViewById(R.id.liveButton)
+        checkButton = findViewById(R.id.checkButton)
         socialButton = findViewById(R.id.socialButton)
         localButton = findViewById(R.id.localButton)
-        liveShellJs = assets.open("www/src/live/social-shell.js").bufferedReader().use { it.readText() } +
-            "\nwindow.AliaSpacesLiveShell.watch();"
 
         assetLoader = WebViewAssetLoader.Builder()
             .addPathHandler("/assets/", WebViewAssetLoader.AssetsPathHandler(this))
             .build()
 
-        val cookies = CookieManager.getInstance()
-        cookies.setAcceptCookie(true)
-        cookies.setAcceptThirdPartyCookies(webView, true)
-
         webView.settings.javaScriptEnabled = true
         webView.settings.domStorageEnabled = true
         webView.settings.allowFileAccess = false
         webView.settings.allowContentAccess = true
-        webView.settings.javaScriptCanOpenWindowsAutomatically = true
+        webView.settings.javaScriptCanOpenWindowsAutomatically = false
         webView.settings.userAgentString = webView.settings.userAgentString.replace("; wv", "")
-        webView.addJavascriptInterface(Bridge(), "AliaSpacesAndroid")
         webView.webViewClient = object : WebViewClient() {
             override fun shouldInterceptRequest(
                 view: WebView,
                 request: WebResourceRequest
             ): WebResourceResponse? {
-                return if (request.url.host == ASSET_HOST) assetLoader.shouldInterceptRequest(request.url) else null
+                return if (request.url.host == NavigationPolicy.ASSET_HOST) {
+                    assetLoader.shouldInterceptRequest(request.url)
+                } else {
+                    null
+                }
             }
 
             override fun shouldOverrideUrlLoading(
@@ -85,19 +82,14 @@ class MainActivity : AppCompatActivity() {
                 request: WebResourceRequest
             ): Boolean {
                 val url = request.url.toString()
-                if (isAllowed(url)) return false
+                if (NavigationPolicy.isProductUrl(url)) {
+                    startActivity(WebsiteActivity.intent(this@MainActivity, url))
+                    return true
+                }
+                if (NavigationPolicy.isLocalAssetUrl(url)) return false
+                if (appMode == MODE_SOCIAL && NavigationPolicy.isSocialAllowed(url)) return false
                 openChrome(url)
                 return true
-            }
-
-            override fun onPageFinished(view: WebView, url: String) {
-                if (appMode == MODE_WEBSITE && isProductUrl(url)) {
-                    view.evaluateJavascript(liveShellJs, null)
-                }
-                if (appMode == MODE_WEBSITE && isProductUrl(url)) {
-                    prefs().edit().putString(PREF_WEBSITE_URL, url).apply()
-                }
-                updateOfflineBanner()
             }
 
             override fun onReceivedError(
@@ -106,8 +98,8 @@ class MainActivity : AppCompatActivity() {
                 error: WebResourceError
             ) {
                 if (!request.isForMainFrame) return
-                if (appMode == MODE_LOCAL) return
-                view.loadUrl(ERROR_URL)
+                if (appMode == MODE_LOCAL || appMode == MODE_CHECK) return
+                view.loadUrl(NavigationPolicy.ERROR_URL)
                 Toast.makeText(this@MainActivity, getString(R.string.load_error_hint), Toast.LENGTH_LONG).show()
             }
         }
@@ -119,20 +111,23 @@ class MainActivity : AppCompatActivity() {
             ): Boolean {
                 fileCallback?.onReceiveValue(null)
                 fileCallback = callback
-                val intent = params?.createIntent() ?: Intent(Intent.ACTION_GET_CONTENT).apply {
+                val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
                     addCategory(Intent.CATEGORY_OPENABLE)
-                    type = "*/*"
+                    type = NavigationPolicy.chooserMime(appMode)
                 }
                 startActivityForResult(intent, REQUEST_FILE)
                 return true
             }
         }
 
-        liveButton.setOnClickListener { showMode(MODE_WEBSITE) }
+        checkButton.setOnClickListener { showMode(MODE_CHECK) }
         socialButton.setOnClickListener { showMode(MODE_SOCIAL) }
         localButton.setOnClickListener { showMode(MODE_LOCAL) }
+        findViewById<Button>(R.id.webAppButton).setOnClickListener {
+            startActivity(WebsiteActivity.intent(this, NavigationPolicy.LIVE_URL))
+        }
         findViewById<Button>(R.id.browserButton).setOnClickListener {
-            openChrome(if (appMode == MODE_WEBSITE) webView.url ?: LIVE_URL else LIVE_URL)
+            openChrome(NavigationPolicy.LIVE_URL)
             Toast.makeText(this, getString(R.string.google_login_hint), Toast.LENGTH_LONG).show()
         }
 
@@ -143,13 +138,21 @@ class MainActivity : AppCompatActivity() {
         })
 
         if (savedInstanceState != null) {
-            appMode = savedInstanceState.getString(STATE_MODE, MODE_WEBSITE) ?: MODE_WEBSITE
+            appMode = savedInstanceState.getString(STATE_MODE, MODE_CHECK) ?: MODE_CHECK
             webView.restoreState(savedInstanceState)
+            syncBridge()
             renderMode()
         } else if (!openIntent(intent)) {
-            showMode(prefs().getString(PREF_MODE, MODE_WEBSITE) ?: MODE_WEBSITE, restoreWebsite = true)
+            val saved = prefs().getString(PREF_MODE, MODE_CHECK) ?: MODE_CHECK
+            if (saved == "website") {
+                startActivity(WebsiteActivity.intent(this, NavigationPolicy.LIVE_URL))
+                showMode(MODE_CHECK)
+            } else {
+                showMode(saved)
+            }
         }
         registerConnectivity()
+        ShortcutHelper.requestPins(this)
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -164,11 +167,6 @@ class MainActivity : AppCompatActivity() {
         webView.saveState(outState)
     }
 
-    override fun onPause() {
-        CookieManager.getInstance().flush()
-        super.onPause()
-    }
-
     override fun onDestroy() {
         connectivityCallback?.let { callback ->
             connectivityManager()?.unregisterNetworkCallback(callback)
@@ -176,18 +174,29 @@ class MainActivity : AppCompatActivity() {
         super.onDestroy()
     }
 
-    private fun showMode(mode: String, url: String? = null, restoreWebsite: Boolean = false) {
+    private fun showMode(mode: String) {
         appMode = mode
         prefs().edit().putString(PREF_MODE, mode).apply()
+        syncBridge()
         renderMode()
         val target = when (mode) {
-            MODE_SOCIAL -> SOCIAL_URL
-            MODE_LOCAL -> LOCAL_URL
-            else -> url
-                ?: if (restoreWebsite) prefs().getString(PREF_WEBSITE_URL, LIVE_URL) else LIVE_URL
+            MODE_SOCIAL -> NavigationPolicy.SOCIAL_URL
+            MODE_LOCAL -> NavigationPolicy.LOCAL_URL
+            MODE_PERSONA -> NavigationPolicy.PERSONA_URL
+            else -> NavigationPolicy.HUB_URL
         }
-        webView.loadUrl(target ?: LIVE_URL)
+        webView.loadUrl(target)
         updateOfflineBanner()
+    }
+
+    private fun syncBridge() {
+        if (appMode == MODE_LOCAL && !bridgeAttached) {
+            webView.addJavascriptInterface(Bridge(), BRIDGE_NAME)
+            bridgeAttached = true
+        } else if (appMode != MODE_LOCAL && bridgeAttached) {
+            webView.removeJavascriptInterface(BRIDGE_NAME)
+            bridgeAttached = false
+        }
     }
 
     private fun renderMode() {
@@ -195,10 +204,11 @@ class MainActivity : AppCompatActivity() {
             when (appMode) {
                 MODE_SOCIAL -> R.string.social_mode_hint
                 MODE_LOCAL -> R.string.local_mode_hint
-                else -> R.string.website_mode_hint
+                MODE_PERSONA -> R.string.persona_mode_hint
+                else -> R.string.check_mode_hint
             }
         )
-        liveButton.isEnabled = appMode != MODE_WEBSITE
+        checkButton.isEnabled = appMode != MODE_CHECK
         socialButton.isEnabled = appMode != MODE_SOCIAL
         localButton.isEnabled = appMode != MODE_LOCAL
     }
@@ -208,8 +218,14 @@ class MainActivity : AppCompatActivity() {
         when {
             uri.scheme == "aliaspaces" && uri.host == MODE_SOCIAL -> showMode(MODE_SOCIAL)
             uri.scheme == "aliaspaces" && uri.host == MODE_LOCAL -> showMode(MODE_LOCAL)
-            uri.scheme == "aliaspaces" -> showMode(MODE_WEBSITE)
-            isProductUrl(uri.toString()) -> showMode(MODE_WEBSITE, uri.toString())
+            uri.scheme == "aliaspaces" && uri.host == MODE_PERSONA -> showMode(MODE_PERSONA)
+            uri.scheme == "aliaspaces" && uri.host == "website" -> {
+                startActivity(WebsiteActivity.intent(this, NavigationPolicy.LIVE_URL))
+            }
+            uri.scheme == "aliaspaces" -> showMode(MODE_CHECK)
+            NavigationPolicy.isProductUrl(uri.toString()) -> {
+                startActivity(WebsiteActivity.intent(this, uri.toString()))
+            }
             else -> return false
         }
         return true
@@ -232,7 +248,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateOfflineBanner() {
-        offlineBanner.visibility = if (appMode != MODE_LOCAL && !isOnline()) View.VISIBLE else View.GONE
+        val needsNet = appMode == MODE_SOCIAL
+        offlineBanner.visibility = if (needsNet && !isOnline()) View.VISIBLE else View.GONE
     }
 
     private fun registerConnectivity() {
@@ -275,6 +292,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun readImport(uri: Uri) {
+        if (appMode != MODE_LOCAL) return
         val text = contentResolver.openInputStream(uri)?.use { stream ->
             BufferedReader(InputStreamReader(stream, StandardCharsets.UTF_8)).readText()
         } ?: return
@@ -285,6 +303,7 @@ class MainActivity : AppCompatActivity() {
     inner class Bridge {
         @JavascriptInterface
         fun exportJson(payload: String) {
+            if (appMode != MODE_LOCAL) return
             pendingExport = payload
             val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
                 addCategory(Intent.CATEGORY_OPENABLE)
@@ -296,6 +315,7 @@ class MainActivity : AppCompatActivity() {
 
         @JavascriptInterface
         fun importJson() {
+            if (appMode != MODE_LOCAL) return
             val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
                 addCategory(Intent.CATEGORY_OPENABLE)
                 type = "application/json"
@@ -305,45 +325,16 @@ class MainActivity : AppCompatActivity() {
     }
 
     companion object {
-        const val MODE_WEBSITE = "website"
+        const val MODE_CHECK = "check"
         const val MODE_SOCIAL = "social"
         const val MODE_LOCAL = "local"
-        private const val LIVE_URL = "https://mypersonas.online/"
-        private const val SOCIAL_URL = "https://appassets.androidplatform.net/assets/www/live.html"
-        private const val LOCAL_URL = "https://appassets.androidplatform.net/assets/www/index.html"
-        private const val ERROR_URL = "https://appassets.androidplatform.net/assets/www/error.html"
-        private const val ASSET_HOST = "appassets.androidplatform.net"
+        const val MODE_PERSONA = "persona"
+        private const val BRIDGE_NAME = "AliaSpacesAndroid"
         private const val REQUEST_EXPORT = 41
         private const val REQUEST_IMPORT = 42
         private const val REQUEST_FILE = 43
         private const val STATE_MODE = "appMode"
         private const val PREFS = "aliaspaces.mobile"
         private const val PREF_MODE = "lastMode"
-        private const val PREF_WEBSITE_URL = "lastWebsiteUrl"
-
-        fun isProductUrl(url: String): Boolean {
-            val host = Uri.parse(url).host ?: return false
-            return host == "mypersonas.online" || host == "www.mypersonas.online" ||
-                host == "aliaspaces.com" || host == "www.aliaspaces.com"
-        }
-
-        fun isAllowed(url: String): Boolean {
-            val host = (Uri.parse(url).host ?: return false).lowercase()
-            if (isProductUrl(url) || host == ASSET_HOST) return true
-            if (host.endsWith(".supabase.co") || host.endsWith(".googleusercontent.com") || host.endsWith(".gstatic.com")) return true
-            return host in setOf(
-                "nwsqyuucwzihruszocge.supabase.co",
-                "accounts.google.com",
-                "accounts.youtube.com",
-                "appleid.apple.com",
-                "cdn.jsdelivr.net",
-                "cdnjs.cloudflare.com",
-                "challenges.cloudflare.com",
-                "www.youtube.com",
-                "player.twitch.tv",
-                "player.kick.com",
-                "w.soundcloud.com",
-            )
-        }
     }
 }

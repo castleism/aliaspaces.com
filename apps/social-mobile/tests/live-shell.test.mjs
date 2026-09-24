@@ -22,6 +22,10 @@ test("live hosts allow the website and auth, not arbitrary origins", async () =>
   assert.equal(hosts.isAllowedHost("https://nwsqyuucwzihruszocge.supabase.co/auth/v1/token"), true);
   assert.equal(hosts.isAllowedHost("https://accounts.google.com/o/oauth2/v2/auth"), true);
   assert.equal(hosts.isAllowedHost("https://evil.example/steal"), false);
+  assert.equal(hosts.isAllowedHost("https://evil.supabase.co/auth/v1/token"), false);
+  assert.equal(hosts.isAllowedHost("https://evil.com@mypersonas.online/"), false);
+  assert.equal(hosts.isAllowedHost("http://mypersonas.online/"), false);
+  assert.equal(hosts.hasUserInfo("https://evil.com@mypersonas.online/"), true);
 });
 
 test("automation routes are redirected and social landing stays the live site", async () => {

@@ -3,6 +3,26 @@
 This is an evidence ledger, not a completion or release claim. Local, tested,
 committed, pushed, deployed, and verified live remain separate.
 
+## Mobile follow-up on PR #1 (same day)
+
+Branch `cursor/aliaspaces-mobile-local-7357` merged current `origin/main`
+(front-door hardening from PR #2) and implemented the mobile merge-blocker
+fixes that an agent can do without a phone or production credentials:
+
+- `AliaSpacesAndroid` is attached only in Local/demo and removed when leaving
+  that mode. Website and Social WebViews never get the bridge.
+- Navigation uses exact product/auth/asset hosts. `*.supabase.co` suffixes,
+  userinfo URLs, and non-https navigations are rejected.
+- File chooser MIME is `application/json` in Local and `image/*` elsewhere.
+- **AliaSpaces Web** is a second launcher (website browser app) with its own
+  task. **AliaSpaces** opens a checker of every site/app to review.
+- Prepared, unapplied SQL and Auth redirect notes live under `docs/`.
+- Read-only public persona lookup is packaged in the app, not on Pages.
+
+This cloud checkout still has no ADB device and no self-hosted worker, so
+the APK was not installed on the owner's phone from here. See
+[docs/PHONE-CHECKLIST.md](docs/PHONE-CHECKLIST.md).
+
 ## Current product boundary
 
 AliaSpaces is the first-party social product: persona and business pages,

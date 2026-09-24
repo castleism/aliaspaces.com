@@ -31,17 +31,24 @@
                 android:textColor="#162033" />
 
             <Button
-                android:id="@+id/liveButton"
+                android:id="@+id/checkButton"
                 android:layout_width="wrap_content"
                 android:layout_height="44dp"
-                android:minWidth="72dp"
+                android:minWidth="64dp"
+                android:text="@string/mode_check" />
+
+            <Button
+                android:id="@+id/webAppButton"
+                android:layout_width="wrap_content"
+                android:layout_height="44dp"
+                android:minWidth="64dp"
                 android:text="@string/mode_website" />
 
             <Button
                 android:id="@+id/socialButton"
                 android:layout_width="wrap_content"
                 android:layout_height="44dp"
-                android:minWidth="72dp"
+                android:minWidth="64dp"
                 android:text="@string/mode_social" />
 
             <Button
@@ -65,7 +72,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="8dp"
-        android:text="@string/website_mode_hint"
+        android:text="@string/check_mode_hint"
         android:textSize="12sp"
         android:textColor="#3b2c73"
         android:background="#efe9ff" />

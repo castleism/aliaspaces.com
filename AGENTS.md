@@ -6,12 +6,16 @@ anything.
 ## Repository shape
 
 - The selected GitHub Pages site is a **redirect/front door** only:
-  `index.html`, `404.html`, `CNAME`, `.nojekyll`. Preserve it.
-- The Pages workflow publishes those four files from `main`. Do not add
+  `index.html`, `404.html`, `favicon.svg`, `CNAME`, `.nojekyll`. Preserve it.
+- The Pages workflow publishes those five files from `main`. Do not add
   application source to that artifact.
 - Social product work lives under `apps/`. The isolated mobile surface is
-  `apps/social-mobile/`: Local demo, Website WebView, and first-party
-  Social client (`live.html`).
+  `apps/social-mobile/`: checker hub, AliaSpaces Web browser app, first-party
+  Social client (`live.html`), Local demo, and read-only persona lookup.
+- The `AliaSpacesAndroid` bridge exists only for the Local/demo origin. It
+  must stay off Website, Social, remote frames, and the website browser app.
+- Main-frame navigation is an exact host allowlist. Reject `*.supabase.co`
+  suffixes, userinfo URLs, and non-https navigations.
 - `split/social-platform-20260824` holds the earlier extraction workbench
   (profile crop) and product-boundary docs. Do not copy fused MyPersonas
   pages, automation, billing, or provider functions into this repository.

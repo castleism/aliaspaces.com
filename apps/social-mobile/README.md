@@ -1,55 +1,35 @@
 # AliaSpaces mobile app
 
-Isolated from the `aliaspaces.com` GitHub Pages front door. The Android
-package has three modes:
+Isolated from the `aliaspaces.com` GitHub Pages front door. One debug APK
+installs **two home-screen apps**:
 
-1. **Website (APK default)** — the real site at `https://mypersonas.online/`,
-   same accounts and database. Automation studio, agent board, provider
-   setup, fan inbox, business settings, and scheduled publishing controls
-   are hidden in the app.
-2. **Social** — first-party client (`live.html`) over the same public
-   Auth/database. Email/password sign-in, owned personas, public handle
-   lookup, review-gated posts, reactions, and account blocks. Automation
-   RPCs are rejected. "Signed in" only after Auth verifies a session.
-3. **Local demo** — device-only profiles/posts/reactions/reports/blocks.
-   This mode still says local/demo and does not talk to the website.
+1. **AliaSpaces Web** — standalone browser app for
+   `https://mypersonas.online/`. Same live accounts and cookies. No local
+   JavaScript bridge.
+2. **AliaSpaces** — checker of every site/app to review, plus the
+   first-party **Social** client and the **Local** demo.
 
-## Website mode — what is real
+Long-press the AliaSpaces icon for Web / Social / Local shortcuts. The first
+launch may also offer to pin AliaSpaces Web.
 
-- Sign in with the same AliaSpaces / MyPersonas account used on the website
-  (email, password, magic link). Google may be blocked inside the WebView;
-  use **Chrome** in the app bar if that happens. Chrome is a separate browser
-  session, not a silent success inside the app.
-- Persona discovery, pages, owner home, publication review, follows/friends,
-  posts, albums, and other website social surfaces run in the live site.
-- Cookies persist in the app WebView for that website origin.
+## What to check
 
-## Social mode — what is real
+Open **Check** (the default). It lists:
 
-- Same public Supabase project the website already publishes.
-- Fail-closed owner RPCs: `my_personas`, `save_persona_post`,
-  `delete_persona_post`, `toggle_persona_reaction`,
-  `set_persona_visibility_rule`, friendships.
-- Posts submitted here still need the website review/publish gates.
-- Deep links: `https://mypersonas.online/…` opens Website mode;
-  `aliaspaces://social` and `aliaspaces://local` open those tabs.
-- Last mode is restored. Offline shows an error, not a fake session.
+- AliaSpaces Web (live website browser app)
+- Front door `aliaspaces.com`
+- First-party Social
+- Local demo
+- Public persona lookup
+- Draft pull request (Chrome)
 
-## What this is not
+## Security boundary
 
-- Not a copy of the fused website into this repository.
-- Not the automation platform.
-- Not a staff moderation queue. The live API has error telemetry, not a
-  content-report RPC.
-- Not production SQL for server-side block projections. The client still
-  filters blocked authors as defense-in-depth.
-- No production secrets. The app uses the public publishable key.
-
-## Local demo
-
-Open `apps/social-mobile/index.html` or tap **Local** in the APK. Create two
-local profiles, post, then block. Hidden content must disappear both ways.
-Export/import JSON if a differently signed APK is installed beside this one.
+- `AliaSpacesAndroid` is attached only while Local demo is showing and is
+  removed when leaving that mode.
+- Main-frame navigation is an exact host allowlist. Attacker-controlled
+  `*.supabase.co` hosts, userinfo URLs, and http navigations are rejected.
+- Local file chooser accepts JSON only. Website/Social accept images only.
 
 ## Tests
 
@@ -57,22 +37,21 @@ Export/import JSON if a differently signed APK is installed beside this one.
 npm test
 ```
 
-First-party fixture smoke (no production writes):
-
 ```bash
+node apps/social-mobile/scripts/hub-smoke.mjs
 node apps/social-mobile/scripts/live-client-smoke.mjs
 ```
 
 ## Android debug package
 
-Package id `com.aliaspaces.social.local` (same-key updates keep local demo
-storage and live-site cookies). Version `0.3.0-social`.
+Package id `com.aliaspaces.social.local`, version `0.4.0-check`.
 
 ```bash
 apps/social-mobile/scripts/build-apk.sh
 ```
 
-Writes `apps/social-mobile/dist/AliaSpaces-local-demo-debug.apk` and a copy
-under `/opt/cursor/artifacts/` when present.
+Same-key `adb install -r` keeps local demo data and website cookies.
+This cloud checkout cannot reach the owner's phone. Follow
+`docs/PHONE-CHECKLIST.md` after install.
 
-Store submission is owner-gated. Google Play is personal; submissions later.
+Store submission is owner-gated.

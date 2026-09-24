@@ -1,0 +1,17 @@
+{
+  "name": "AliaSpaces checker",
+  "short_name": "AliaSpaces",
+  "description": "Sites and apps to check for the AliaSpaces mobile work. Not a production social home.",
+  "start_url": "./hub.html",
+  "display": "standalone",
+  "background_color": "#f4f1ff",
+  "theme_color": "#6d4aff",
+  "icons": [
+    {
+      "src": "./mark.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

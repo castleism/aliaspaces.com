@@ -31,18 +31,44 @@
     return host.toLowerCase();
   }
 
+  function hasUserInfo(value) {
+    const text = String(value || "");
+    const match = text.match(/^[a-z][a-z0-9+.-]*:\/\/([^/?#]+)/i);
+    return !!(match && match[1].includes("@"));
+  }
+
+  function isHttpsUrl(value) {
+    return /^https:\/\//i.test(String(value || ""));
+  }
+
   function isAllowedHost(value) {
+    if (!isHttpsUrl(value) || hasUserInfo(value)) return false;
     const host = hostOf(value);
     if (!host) return false;
-    if (LIVE_HOSTS.includes(host) || AUTH_HOSTS.includes(host) || ASSET_HOSTS.includes(host)) return true;
-    return host.endsWith(".supabase.co") || host.endsWith(".googleusercontent.com") || host.endsWith(".gstatic.com");
+    return LIVE_HOSTS.includes(host) || AUTH_HOSTS.includes(host) || ASSET_HOSTS.includes(host);
   }
 
   function isLiveProductHost(value) {
+    if (!isHttpsUrl(value) || hasUserInfo(value)) return false;
     return LIVE_HOSTS.includes(hostOf(value));
   }
 
-  const api = { LIVE_HOSTS, AUTH_HOSTS, ASSET_HOSTS, hostOf, isAllowedHost, isLiveProductHost };
+  function isLocalAssetUrl(value) {
+    if (!isHttpsUrl(value) || hasUserInfo(value)) return false;
+    return hostOf(value) === "appassets.androidplatform.net";
+  }
+
+  const api = {
+    LIVE_HOSTS,
+    AUTH_HOSTS,
+    ASSET_HOSTS,
+    hostOf,
+    hasUserInfo,
+    isHttpsUrl,
+    isAllowedHost,
+    isLiveProductHost,
+    isLocalAssetUrl,
+  };
 
   const root = typeof globalThis !== "undefined" ? globalThis : undefined;
   if (root) root.AliaSpacesLiveHosts = api;

@@ -38,6 +38,9 @@ social records while keeping AliaSpaces inside its product boundary.
 
 ## Done in this checkout (client slice)
 
+- Website browser app split from the Local WebView. JS bridge is Local-only.
+- Exact-host navigation. Prepared Auth redirect URIs and unapplied SQL.
+
 - First-party client (`apps/social-mobile/src/live/social-client.js`) over
   the public project `nwsqyuucwzihruszocge` and publishable key.
 - Email/password Auth, `my_personas` identity projection, public handle
