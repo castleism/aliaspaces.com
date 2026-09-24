@@ -49,6 +49,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         com.portfolio.guide.AppGuide.install(this)
         setContentView(R.layout.activity_main)
+        com.portfolio.guide.WindowSafety.apply(this)
         webView = findViewById(R.id.webView)
         modeLabel = findViewById(R.id.modeLabel)
         offlineBanner = findViewById(R.id.offlineBanner)
