@@ -51,6 +51,9 @@ assert.deepEqual(violations, [], `Control-plane code crossed the AliaSpaces mobi
 
 const pages = await readFile(path.join(root, ".github/workflows/pages.yml"), "utf8");
 assert.match(pages, /branches:\s*\[main\]/);
+assert.match(pages, /if: github\.ref == 'refs\/heads\/main'/);
+const includedFiles = [...pages.matchAll(/--include '\/([^']+)'/g)].map((match) => match[1]);
+assert.deepEqual(includedFiles, ["index.html", "404.html", "favicon.svg", "CNAME", ".nojekyll"]);
 for (const directory of ["apps", "contracts", "docs", "scripts"]) {
   assert.doesNotMatch(pages, new RegExp(`--include ['"]\\/${directory}`));
 }
