@@ -39,9 +39,9 @@ const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
 try {
   await page.goto(`http://127.0.0.1:${port}/hub.html`, { waitUntil: "networkidle" });
   await page.getByRole("heading", { name: "On this phone after install" }).waitFor();
-  await page.getByText("AliaSpaces Web").waitFor();
-  await page.getByText("First-party Social").waitFor();
-  await page.getByText("Local demo").waitFor();
+  await page.locator("#targets").getByText("AliaSpaces Web").waitFor();
+  await page.locator("#targets").getByText("First-party Social").waitFor();
+  await page.locator("#targets").getByText("Local demo").waitFor();
   const links = await page.locator("#targets a.btn").evaluateAll((nodes) => nodes.map((node) => node.getAttribute("href")));
   assert.ok(links.includes("aliaspaces://website"));
   assert.ok(links.includes("aliaspaces://social"));
