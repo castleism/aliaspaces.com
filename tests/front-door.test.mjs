@@ -37,9 +37,8 @@ test("the Pages workflow is main-only, pinned, and allowlists only the front doo
     );
   }
 
-  for (const file of ["index.html", "404.html", "favicon.svg", "CNAME", ".nojekyll"]) {
-    assert.match(source, new RegExp(`--include '/${file.replace(".", "\\.")}'`));
-  }
+  const includedFiles = [...source.matchAll(/--include '\/([^']+)'/g)].map((match) => match[1]);
+  assert.deepEqual(includedFiles, ["index.html", "404.html", "favicon.svg", "CNAME", ".nojekyll"]);
   assert.match(source, /--exclude '\*'/);
   assert.doesNotMatch(source, /--include '\/(?:apps|docs|supabase|tests|scripts)\//);
 });

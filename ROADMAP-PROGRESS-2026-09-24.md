@@ -16,11 +16,14 @@ operations, and the current production migration authority. Identity,
 entitlements, media, provenance, moderation, and account lifecycle are shared
 versioned contracts, not duplicated privileged code.
 
-## Completed in the isolated local progress branch
+## Completed and pushed for review
 
 Branch: `codex/aliaspaces-roadmap-progress-20260924`, based on current
-`origin/main` (`07eabc124254a769c2ddd52d5fc1f613e30fab20`). Nothing in this
-section is pushed, merged, deployed, or applied to an account.
+`origin/main` (`07eabc124254a769c2ddd52d5fc1f613e30fab20`). Commit
+`e5a0e02399465dc8a35b3c753af8c2ad66e63c3b` was pushed and opened as
+[PR #2](https://github.com/castleism/aliaspaces.com/pull/2). At this checkpoint,
+the PR was open and awaiting CI; it was not yet merged or deployed, and no
+account, DNS, environment, or production-data setting was changed.
 
 - Reconciled the README with the product split and the actual five-file public
   artifact while preserving the redirect/front-door behavior.
@@ -91,8 +94,8 @@ UI hiding in the Website WebView is presentation, not an authorization boundary.
 - GitHub reports `main` as unprotected.
 - The `github-pages` environment is limited to main, but it has no required
   reviewer rule.
-- The new `CODEOWNERS`, CI, action pins, and main-only guard are local until a
-  reviewed PR is authorized and merged.
+- The new `CODEOWNERS`, CI, action pins, and main-only guard are in PR #2 and do
+  not protect or deploy `main` until that reviewed PR is merged.
 
 ## Remaining owner/external actions
 
