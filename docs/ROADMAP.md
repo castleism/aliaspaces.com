@@ -112,3 +112,14 @@ physical phone and not the owner's local phone-test builds):
   accounts are recorded as verified; Google is personal; do not submit.
 - Two-account privacy, MFA recovery, and live moderation staffing are
   milestone 2+ gates, not implied by the first-party client or local store.
+
+
+## Design and phone checkpoint — 23 September 2026
+
+Readable native Website/Social/Local mode controls, compact shared-account explanation and refined local/social styling. Actual live website remains its existing design.
+
+Android debug build and automated checks passed; signature verified, installed in place and launched on Samsung SM-N986U1. This is not full workflow or store-release verification.
+
+Remaining: Production authorization/moderation integration and two-account privacy, sign-in/MFA and real-device release verification.
+
+Portfolio evidence: `mobile-publishing-2026-09-20/design-apks/phone-verification.json`, app build log, and `DESIGN-ROADMAP-STATUS.md`. Older environment limitations above are historical; the phone is now connected.

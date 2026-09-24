@@ -47,6 +47,7 @@ class MainActivity : AppCompatActivity() {
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        com.portfolio.guide.AppGuide.install(this)
         setContentView(R.layout.activity_main)
         webView = findViewById(R.id.webView)
         modeLabel = findViewById(R.id.modeLabel)

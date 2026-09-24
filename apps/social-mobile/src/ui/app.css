@@ -169,3 +169,17 @@ textarea { min-height: 110px; resize: vertical; }
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
 }
+
+
+/* Approved September visual direction. Decoration never carries essential meaning. */
+.brand-art{display:block;width:min(100%,320px);height:140px;margin:8px auto 22px}
+button,input,select,summary{min-height:48px}summary{cursor:pointer;padding:14px 0;font-weight:600}
+details{border-top:1px solid #ddd7ce;padding:0 2px}details[open]{padding-bottom:16px}
+button:focus-visible,a:focus-visible,summary:focus-visible{outline:3px solid #937149;outline-offset:4px}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
+
+:root{--bg:#faf9fc;--bg-2:#faf9fc;--accent:#344783;--line:#e4dfee;--shadow:none}
+html,body{background:var(--bg)}h1,h2,.product{font-family:Georgia,serif;font-weight:400;letter-spacing:-.025em}
+.product{font-size:24px}.mark{background:#dcd4ef;color:#303966;border-radius:24px 24px 4px 4px}
+.sheet{padding:22px}.card{border-radius:20px;box-shadow:none}.banner{width:calc(100% - 32px);font-size:12px}
+button{border-radius:24px}.tabs{background:#faf9fc}

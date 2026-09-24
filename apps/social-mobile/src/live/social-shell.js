@@ -73,10 +73,12 @@
     }
     let banner = doc.getElementById("aliaspacesLiveBanner");
     if (!banner && doc.body) {
-      banner = doc.createElement("div");
+      banner = doc.createElement("details");
       banner.id = "aliaspacesLiveBanner";
-      banner.setAttribute("role", "status");
       banner.textContent = "Live AliaSpaces website — same accounts and database as mypersonas.online. Automation studio, provider setup, and agent tools stay on the website control plane and are hidden in this app.";
+      const summary = doc.createElement("summary");
+      summary.textContent = "About your shared account";
+      banner.insertBefore(summary, banner.firstChild);
       banner.style.cssText = "margin:0;padding:10px 14px;background:#efe9ff;color:#3b2c73;font:600 13px/1.4 Inter,system-ui,sans-serif;border-bottom:1px solid #d7c8ff";
       doc.body.insertBefore(banner, doc.body.firstChild);
     }

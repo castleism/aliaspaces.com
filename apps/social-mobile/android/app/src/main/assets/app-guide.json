@@ -1,0 +1,23 @@
+{
+  "name": "AliaSpaces",
+  "accent": "#51577F",
+  "purpose": "your different spaces",
+  "intro": "Explore AliaSpaces through three distinct modes while keeping the relationship to your MyPersonas account clear.",
+  "features": [
+    "Website opens the actual AliaSpaces website and shared account system.",
+    "Social opens the first-party social client; sign-in and review gates still apply.",
+    "Local opens a separate demonstration; it does not write to the website database."
+  ],
+  "demo": [
+    "Start in Website to see the real service, or choose Local to inspect the demonstration.",
+    "Check the mode label before entering information or expecting shared-account behavior.",
+    "Use Social only with the understanding that a verified session and review rules are required. This guide creates no account or post."
+  ],
+  "setup": [
+    "Choose the mode appropriate to what you want to test.",
+    "Have your shared MyPersonas credentials and MFA available for real sign-in.",
+    "Confirm the selected account and mode before using online features."
+  ],
+  "boundary": "Website, Social and Local are different experiences. Local demo records are not online posts. Production authorization, moderation and multi-account privacy still need release verification.",
+  "privacy": "Only enter credentials into the real sign-in flow. This walkthrough performs no sign-in, account linking or publication."
+}

@@ -14,3 +14,17 @@ apps/social-mobile/android/app/src/main/assets/www/
 apps/social-mobile/dist/*.apk
 *.apk
 .pages-artifact/
+
+# Local-only mobile development artifacts
+**/node_modules/
+**/.gradle/
+**/.cxx/
+**/local.properties
+**/key.properties
+*.keystore
+*.jks
+*.apk
+*.aab
+.env
+.env.*
+phone-cleanup-backup/
