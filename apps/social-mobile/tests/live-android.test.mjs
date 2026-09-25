@@ -16,10 +16,13 @@ test("Android splits the website browser app from the local bridge", async () =>
   assert.match(manifest, /android.permission.INTERNET/);
   assert.match(manifest, /WebsiteActivity/);
   assert.match(manifest, /android.intent.category.LAUNCHER/);
-  assert.equal([...manifest.matchAll(/android.intent.category.LAUNCHER/g)].length, 2);
-  assert.match(gradle, /0\.4\.0-check/);
+  assert.equal([...manifest.matchAll(/android.intent.category.LAUNCHER/g)].length, 4);
+  assert.match(manifest, /SocialLauncherActivity/);
+  assert.match(manifest, /LocalLauncherActivity/);
+  assert.match(gradle, /0\.5\.0-pwa/);
   assert.match(gradle, /hub\.html/);
   assert.match(gradle, /persona\.html/);
+  assert.match(gradle, /sw\.js/);
 
   assert.match(activity, /MODE_CHECK/);
   assert.match(activity, /addJavascriptInterface/);

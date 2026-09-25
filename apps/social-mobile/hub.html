@@ -5,10 +5,11 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="robots" content="noindex,nofollow">
   <meta name="theme-color" content="#6d4aff">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self' blob: data:; img-src 'self' blob: data:; script-src 'self'; style-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' blob: data:; img-src 'self' blob: data:; script-src 'self'; style-src 'self'; connect-src 'none'; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
   <title>AliaSpaces checker</title>
   <link rel="stylesheet" href="./src/ui/app.css">
   <link rel="manifest" href="./hub.webmanifest">
+  <link rel="apple-touch-icon" href="./icons/icon-192.png">
 </head>
 <body>
   <header class="topbar">
@@ -26,7 +27,7 @@
   <main id="main" class="sheet">
     <section class="card">
       <h1>On this phone after install</h1>
-      <p>The APK adds two home-screen apps: <strong>AliaSpaces Web</strong> (live website browser app) and <strong>AliaSpaces</strong> (this checker plus Social and Local). The first launch may also offer to pin AliaSpaces Web.</p>
+      <p>The APK adds four home-screen apps: <strong>AliaSpaces</strong> (this checker), <strong>AliaSpaces Web</strong> (live website), <strong>AliaSpaces Social</strong>, and <strong>AliaSpaces Local</strong>. Packaged pages are installable PWAs. The first launch may also offer to pin AliaSpaces Web.</p>
     </section>
     <section class="list" id="targets"></section>
     <section class="card">
@@ -35,5 +36,6 @@
     </section>
   </main>
   <script src="./src/live/hub.js"></script>
+  <script src="./src/live/register-pwa.js"></script>
 </body>
 </html>

@@ -12,6 +12,8 @@ anything.
 - Social product work lives under `apps/`. The isolated mobile surface is
   `apps/social-mobile/`: checker hub, AliaSpaces Web browser app, first-party
   Social client (`live.html`), Local demo, and read-only persona lookup.
+  Those packaged pages are PWAs. Do not add a manifest or service worker
+  to the five-file Pages front door.
 - The `AliaSpacesAndroid` bridge exists only for the Local/demo origin. It
   must stay off Website, Social, remote frames, and the website browser app.
 - Main-frame navigation is an exact host allowlist. Reject `*.supabase.co`

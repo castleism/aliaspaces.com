@@ -54,5 +54,27 @@
                 <data android:scheme="aliaspaces" android:host="website" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".SocialLauncherActivity"
+            android:exported="true"
+            android:label="@string/social_app_name"
+            android:theme="@style/Theme.AliaSpacesLocal"
+            android:taskAffinity="com.aliaspaces.social.local.social">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".LocalLauncherActivity"
+            android:exported="true"
+            android:label="@string/local_app_name"
+            android:theme="@style/Theme.AliaSpacesLocal"
+            android:taskAffinity="com.aliaspaces.social.local.localdemo">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
     </application>
 </manifest>

@@ -1,8 +1,9 @@
-# Mobile evidence (2026-09-24)
+# Mobile evidence (2026-09-25)
 
 Owner phone-test prototypes are not in this checkout and are not claimed.
 No ADB device and no self-hosted worker were connected to this run, so the
-APK was not installed on a physical phone here.
+APK was not installed on a physical phone here. `scripts/install-on-phone.sh`
+records that attempt.
 
 ## Unit and boundary
 
@@ -11,8 +12,9 @@ npm test
 ```
 
 Covers front-door Pages allowlist, local block exclusion, exact-host
-navigation, userinfo rejection, Local-only bridge, two launcher activities,
-checker targets, and fail-closed social client.
+navigation, userinfo rejection, Local-only bridge, four launcher
+activities, packaged PWA manifests/service worker/PNG icons, checker
+targets, and fail-closed social client.
 
 ## Smokes
 
@@ -26,9 +28,18 @@ checker targets, and fail-closed social client.
 | Field | Value |
 | --- | --- |
 | Application id | `com.aliaspaces.social.local` |
-| Launchers | AliaSpaces, AliaSpaces Web |
-| Version | `0.4.0-check` (versionCode 4) |
+| Launchers | AliaSpaces, AliaSpaces Web, AliaSpaces Social, AliaSpaces Local |
+| Version | `0.5.0-pwa` (versionCode 5) |
 | Signing | committed `android/debug.keystore` |
+| Packaged PWAs | hub, Social, Local, persona (standalone + `sw.js`) |
+
+## Websites that are not PWAs from this repo
+
+- `aliaspaces.com` stays the five-file Pages redirect. A manifest or
+  service worker there would change the public allowlist.
+- `mypersonas.online` is a different origin. Chrome “Add to Home screen”
+  needs an owner tap on that site. The APK **AliaSpaces Web** launcher is
+  the installable website copy this package can ship.
 
 ## Not verified here
 

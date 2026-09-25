@@ -21,4 +21,6 @@ test("checker lists the website browser app and in-progress clients", async () =
   const html = await readFile(path.join(appRoot, "hub.html"), "utf8");
   assert.match(html, /connect-src 'none'/);
   assert.match(html, /Sites and apps to check/);
+  assert.match(html, /four home-screen apps/);
+  assert.match(html, /rel="manifest" href=".\/hub.webmanifest"/);
 });

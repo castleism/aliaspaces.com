@@ -13,8 +13,8 @@ android {
         applicationId "com.aliaspaces.social.local"
         minSdk 24
         targetSdk 34
-        versionCode 4
-        versionName "0.4.0-check"
+        versionCode 5
+        versionName "0.5.0-pwa"
     }
 
     signingConfigs {
@@ -63,7 +63,12 @@ tasks.register("copyWebAssets", Copy) {
         include "persona.html"
         include "error.html"
         include "hub.webmanifest"
+        include "social.webmanifest"
+        include "persona.webmanifest"
+        include "local.webmanifest"
+        include "sw.js"
         include "mark.svg"
+        include "icons/**"
         include "src/**"
     }
     into("${projectDir}/src/main/assets/www")

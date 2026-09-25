@@ -3,6 +3,32 @@
 This is an evidence ledger, not a completion or release claim. Local, tested,
 committed, pushed, deployed, and verified live remain separate.
 
+## 2026-09-25 — packaged PWAs and four launchers
+
+Branch `cursor/aliaspaces-mobile-local-7357` finished the remaining
+agent-doable mobile slice:
+
+- Hub, Social, Local, and persona pages are standalone PWAs (manifest,
+  same-origin service worker, 192/512/maskable PNG icons).
+- The APK (`0.5.0-pwa`, versionCode 5) now has four home-screen launchers:
+  AliaSpaces, AliaSpaces Web, AliaSpaces Social, AliaSpaces Local.
+- `scripts/install-on-phone.sh` attempts `adb install -r` and records
+  no-device when this cloud checkout has no phone.
+- Local export → owner-draft import notes:
+  `docs/migrations/003_local_export_import.md`.
+
+Not done from this VM, and not claimed:
+
+- Physical `adb install` or Chrome “Add to Home screen” on the owner phone
+  (no ADB device, no self-hosted worker).
+- A PWA on `aliaspaces.com` (would expand the five-file Pages allowlist).
+- A PWA on `mypersonas.online` (different origin; needs an owner tap).
+- MFA / two-account proof, Auth dashboard URIs, production SQL apply,
+  merge, Pages deploy, store submit, iOS signing.
+
+The PR #2 merge-blocker items (Local-only bridge, exact hosts, narrow
+MIME) remain fixed in this branch.
+
 ## Mobile follow-up on PR #1 (same day)
 
 Branch `cursor/aliaspaces-mobile-local-7357` merged current `origin/main`

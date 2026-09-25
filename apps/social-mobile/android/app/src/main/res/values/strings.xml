@@ -1,6 +1,8 @@
 <resources>
     <string name="app_name">AliaSpaces</string>
     <string name="website_app_name">AliaSpaces Web</string>
+    <string name="social_app_name">AliaSpaces Social</string>
+    <string name="local_app_name">AliaSpaces Local</string>
     <string name="mode_check">Check</string>
     <string name="mode_website">Web</string>
     <string name="mode_social">Social</string>

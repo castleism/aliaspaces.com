@@ -1,13 +1,19 @@
 # AliaSpaces mobile app
 
 Isolated from the `aliaspaces.com` GitHub Pages front door. One debug APK
-installs **two home-screen apps**:
+installs **four home-screen apps**:
 
-1. **AliaSpaces Web** — standalone browser app for
+1. **AliaSpaces** — checker of every site/app to review.
+2. **AliaSpaces Web** — standalone browser app for
    `https://mypersonas.online/`. Same live accounts and cookies. No local
    JavaScript bridge.
-2. **AliaSpaces** — checker of every site/app to review, plus the
-   first-party **Social** client and the **Local** demo.
+3. **AliaSpaces Social** — first-party social client.
+4. **AliaSpaces Local** — device-only demo.
+
+Packaged hub / Social / Local / persona pages also ship as standalone PWAs
+(web manifest, same-origin service worker, 192/512 PNG icons). The public
+`aliaspaces.com` front door is not a PWA. A Chrome PWA of
+`mypersonas.online` needs an owner tap on that origin.
 
 Long-press the AliaSpaces icon for Web / Social / Local shortcuts. The first
 launch may also offer to pin AliaSpaces Web.
@@ -44,10 +50,11 @@ node apps/social-mobile/scripts/live-client-smoke.mjs
 
 ## Android debug package
 
-Package id `com.aliaspaces.social.local`, version `0.4.0-check`.
+Package id `com.aliaspaces.social.local`, version `0.5.0-pwa`.
 
 ```bash
 apps/social-mobile/scripts/build-apk.sh
+apps/social-mobile/scripts/install-on-phone.sh
 ```
 
 Same-key `adb install -r` keeps local demo data and website cookies.

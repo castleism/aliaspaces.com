@@ -28,12 +28,19 @@ See also [PROJECT-BOUNDARY.md](../PROJECT-BOUNDARY.md) and
 - [x] Bridge exists only for Local/demo. Exact-host navigation. Narrow MIME.
 - [x] Read-only public persona lookup in the APK (not on Pages).
 - [x] Auth redirect URI list and block/report SQL prepared, not applied.
-- [x] Debug APK `0.4.0-check` (versionCode 4), same package and keystore.
+- [x] Debug APK `0.5.0-pwa` (versionCode 5), same package and keystore.
+- [x] Packaged hub / Social / Local / persona pages are standalone PWAs
+      (manifest, service worker, 192/512 PNG icons). Four APK launchers
+      install those surfaces on a phone.
+- [x] Local export → owner-draft import notes in
+      [migrations/003_local_export_import.md](migrations/003_local_export_import.md).
 
 ## Remaining owner-gated work
 
 1. Install the APK on a physical phone (`docs/PHONE-CHECKLIST.md`). This
-   cloud agent has no ADB device and no self-hosted worker.
+   cloud agent has no ADB device and no self-hosted worker. Chrome
+   “Add to Home screen” for `mypersonas.online` also needs an owner tap
+   on that origin. `aliaspaces.com` stays a five-file redirect, not a PWA.
 2. MFA and two-unrelated-account privacy on that phone.
 3. Add the redirect URIs in [AUTH-REDIRECTS.md](AUTH-REDIRECTS.md) in the
    Auth dashboard.

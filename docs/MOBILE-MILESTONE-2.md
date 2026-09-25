@@ -40,6 +40,8 @@ social records while keeping AliaSpaces inside its product boundary.
 
 - Website browser app split from the Local WebView. JS bridge is Local-only.
 - Exact-host navigation. Prepared Auth redirect URIs and unapplied SQL.
+- Packaged hub / Social / Local / persona PWAs and four APK launchers
+  (`0.5.0-pwa`). Local export → owner-draft import notes prepared.
 
 - First-party client (`apps/social-mobile/src/live/social-client.js`) over
   the public project `nwsqyuucwzihruszocge` and publishable key.
