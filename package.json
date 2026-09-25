@@ -1,0 +1,14 @@
+{
+  "name": "aliaspaces",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AliaSpaces public front door plus isolated social mobile app (local demo, live website, first-party client).",
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/front-door.test.mjs apps/social-mobile/tests/*.test.mjs && node scripts/check-boundaries.mjs",
+    "test:boundaries": "node scripts/check-boundaries.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

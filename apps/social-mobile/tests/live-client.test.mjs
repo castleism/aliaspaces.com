@@ -1,0 +1,202 @@
+import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
+import path from "node:path";
+import test from "node:test";
+import vm from "node:vm";
+import { fileURLToPath } from "node:url";
+
+const appRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+
+async function loadClient() {
+  const sandbox = { module: { exports: {} }, URL };
+  sandbox.globalThis = sandbox;
+  for (const name of ["contract.js", "social-client.js"]) {
+    const source = await readFile(path.join(appRoot, "src/live", name), "utf8");
+    sandbox.module = { exports: {} };
+    vm.createContext(sandbox);
+    vm.runInContext(source, sandbox, { filename: name });
+  }
+  return {
+    contract: sandbox.AliaSpacesLiveContract.CONTRACT,
+    factory: sandbox.AliaSpacesLiveClient,
+  };
+}
+
+test("unsigned writes fail closed and signed-in is only claimed after a session", async () => {
+  const { factory } = await loadClient();
+  const client = factory.createClient({ mode: "fixture" });
+  assert.equal(client.status().signedIn, false);
+  assert.equal(client.status().sessionState, "signed-out");
+  const denied = await client.savePost({ personaId: "persona_north", body: "should not write" });
+  assert.equal(denied.ok, false);
+  assert.equal(denied.error.code, "unsigned");
+  assert.equal(client.status().signedIn, false);
+
+  const failed = await client.signInWithPassword({
+    email: "fixture.north@example.invalid",
+    password: "wrong",
+  });
+  assert.equal(failed.ok, false);
+  assert.equal(client.status().signedIn, false);
+
+  const signed = await client.signInWithPassword({
+    email: "fixture.north@example.invalid",
+    password: "fixture-only-not-production",
+  });
+  assert.equal(signed.ok, true);
+  assert.equal(client.status().signedIn, true);
+  assert.equal(client.status().sessionState, "signed-in");
+});
+
+test("identity projection maps account and persona without inventing users", async () => {
+  const { factory, contract } = await loadClient();
+  const client = factory.createClient({ mode: "fixture" });
+  await client.signInWithPassword({
+    email: "fixture.north@example.invalid",
+    password: "fixture-only-not-production",
+  });
+  const mine = await client.myPersonas();
+  assert.equal(mine.ok, true);
+  assert.equal(mine.projections.length, 1);
+  const row = mine.projections[0];
+  for (const field of contract.identityProjection) {
+    assert.ok(row[field], `missing ${field}`);
+  }
+  assert.equal(row.handle, "fixture_north");
+  assert.equal(row.account_id, "acct_fixture_north");
+});
+
+test("block hides the other persona's posts in the client filter", async () => {
+  const { factory } = await loadClient();
+  const client = factory.createClient({ mode: "fixture" });
+  await client.signInWithPassword({
+    email: "fixture.north@example.invalid",
+    password: "fixture-only-not-production",
+  });
+  const before = await client.myProfilePosts({
+    actorPersonaId: "persona_north",
+    targetPersonaId: "persona_south",
+  });
+  assert.equal(before.ok, true);
+  assert.equal(before.data.some((post) => post.id === "post_south"), true);
+
+  const blocked = await client.setVisibilityRule({
+    otherPersonaId: "persona_south",
+    kind: "block",
+    enabled: true,
+  });
+  assert.equal(blocked.ok, true);
+
+  const after = await client.myProfilePosts({
+    actorPersonaId: "persona_north",
+    targetPersonaId: "persona_south",
+  });
+  assert.equal(after.data.some((post) => post.id === "post_south"), false);
+
+  const visible = client.visiblePosts(before.data, [
+    { kind: "block", other_persona_id: "persona_south" },
+  ], "persona_north");
+  assert.equal(visible.some((post) => post.id === "post_south"), false);
+});
+
+test("savePost stays review-gated and never claims a public publish", async () => {
+  const { factory } = await loadClient();
+  const client = factory.createClient({ mode: "fixture" });
+  await client.signInWithPassword({
+    email: "fixture.north@example.invalid",
+    password: "fixture-only-not-production",
+  });
+  const saved = await client.savePost({
+    personaId: "persona_north",
+    body: "Fixture review draft",
+  });
+  assert.equal(saved.ok, true);
+  assert.equal(saved.published, false);
+  assert.equal(saved.reviewRequired, true);
+  assert.match(saved.message, /not auto-published/i);
+});
+
+test("automation RPCs and unknown tables are rejected", async () => {
+  const { factory } = await loadClient();
+  const client = factory.createClient({ mode: "fixture" });
+  await client.signInWithPassword({
+    email: "fixture.north@example.invalid",
+    password: "fixture-only-not-production",
+  });
+  const forbidden = await client.callRpc("save_ai_task_definition", {});
+  assert.equal(forbidden.ok, false);
+  assert.equal(forbidden.error.code, "forbidden-rpc");
+  const unknown = await client.callRpc("not_a_social_rpc", {});
+  assert.equal(unknown.ok, false);
+  assert.equal(unknown.error.code, "unknown-rpc");
+  const table = await client.readTable("agent_actions");
+  assert.equal(table.ok, false);
+  assert.match(table.error.message, /not a social table/);
+});
+
+test("transport errors stay fail-closed and fixture catalog is not live", async () => {
+  const { factory } = await loadClient();
+  const transport = {
+    kind: "offline-stub",
+    async authPassword() {
+      throw Object.assign(new Error("network down"), { name: "TypeError" });
+    },
+    async rpc() {
+      throw new Error("network down");
+    },
+    async select() {
+      throw new Error("network down");
+    },
+    async authUser() {
+      throw new Error("network down");
+    },
+    async authLogout() {
+      return { ok: true };
+    },
+    async authSignup() {
+      throw new Error("network down");
+    },
+  };
+  const client = factory.createClient({ transport, mode: "live" });
+  const result = await client.signInWithPassword({
+    email: "someone@example.com",
+    password: "secret",
+  });
+  assert.equal(result.ok, false);
+  assert.equal(client.status().signedIn, false);
+  const catalog = client.fixtureCatalog();
+  assert.match(catalog.note, /never written to production|never written/i);
+  assert.match(catalog.note, /not online users/i);
+});
+
+test("live contract uses the public website project and never a service role", async () => {
+  const { contract } = await loadClient();
+  const source = await readFile(path.join(appRoot, "src/live/social-client.js"), "utf8");
+  assert.equal(contract.supabaseUrl, "https://nwsqyuucwzihruszocge.supabase.co");
+  assert.match(contract.publishableKey, /^sb_publishable_/);
+  assert.equal(contract.audience, "aliaspaces-social-mobile");
+  assert.ok(contract.allowedRpcs.save_persona_post.writes);
+  assert.equal(contract.allowedRpcs.my_personas.writes, false);
+  assert.ok(contract.forbiddenRpcs.includes("save_ai_task_definition"));
+  assert.doesNotMatch(source, /service_role|SUPABASE_SERVICE_ROLE/);
+});
+
+test("read-only live personas query is empty-honest and unsigned my_personas is denied", async () => {
+  const key = "sb_publishable_vN6BdSvBKf_yTJt0eeK20w_afKz1Df2";
+  const headers = {
+    apikey: key,
+    Authorization: `Bearer ${key}`,
+    "Content-Type": "application/json",
+  };
+  const publicRows = await fetch("https://nwsqyuucwzihruszocge.supabase.co/rest/v1/personas?select=id,handle&visibility=eq.public&publication_state=eq.published&limit=5", { headers });
+  assert.equal(publicRows.ok, true);
+  const personas = await publicRows.json();
+  assert.ok(Array.isArray(personas));
+
+  const mine = await fetch("https://nwsqyuucwzihruszocge.supabase.co/rest/v1/rpc/my_personas", {
+    method: "POST",
+    headers,
+    body: "{}",
+  });
+  assert.equal(mine.status, 401);
+});

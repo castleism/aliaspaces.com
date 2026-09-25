@@ -1,0 +1,19 @@
+<resources>
+    <string name="app_name">AliaSpaces</string>
+    <string name="website_app_name">AliaSpaces Web</string>
+    <string name="social_app_name">AliaSpaces Social</string>
+    <string name="local_app_name">AliaSpaces Local</string>
+    <string name="mode_check">Check</string>
+    <string name="mode_website">Web</string>
+    <string name="mode_social">Social</string>
+    <string name="mode_local">Local</string>
+    <string name="open_chrome">Chrome</string>
+    <string name="check_mode_hint">Checker: every AliaSpaces site and app to review. Web is a separate home-screen app. Social and Local stay in this package.</string>
+    <string name="website_app_hint">Website browser app for mypersonas.online. Same accounts and cookies as the live site. No local JS bridge.</string>
+    <string name="social_mode_hint">First-party social client. Signed in only after Auth verifies a session. Posts still go through review gates.</string>
+    <string name="local_mode_hint">Local demo only. Nothing is sent to the website database. The Android bridge exists only in this mode.</string>
+    <string name="persona_mode_hint">Read-only public persona lookup. Empty results stay empty. This is not a staff queue.</string>
+    <string name="google_login_hint">If Google sign-in is blocked inside the app, use Chrome. Email and password stay in this app. Chrome is a separate session.</string>
+    <string name="offline_hint">This device is offline. The social client cannot reach the database. Local demo and the checker still work.</string>
+    <string name="load_error_hint">The live page did not load. Check the network, then open Web again.</string>
+</resources>

@@ -1,0 +1,7 @@
+<resources>
+    <style name="Theme.AliaSpacesLocal" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:statusBarColor">#6d4aff</item>
+        <item name="android:navigationBarColor">#ffffff</item>
+        <item name="android:windowBackground">#f4f1ff</item>
+    </style>
+</resources>

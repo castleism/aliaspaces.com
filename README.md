@@ -18,7 +18,9 @@ front door. No analytics, cookies, forms, credentials, or private application
 data are present here. The Pages workflow publishes only the five explicit
 public files.
 
-Independent social application work must remain non-deploying until its shared
-contracts, opaque public media, signed-in mobile tests, and two-account privacy
-matrix pass. See [PROJECT-BOUNDARY.md](PROJECT-BOUNDARY.md) and
-[ROADMAP-PROGRESS-2026-09-24.md](ROADMAP-PROGRESS-2026-09-24.md).
+Independent social application work lives in `apps/social-mobile/` and is not
+part of the Pages artifact. It must remain non-deploying until its shared
+contracts, opaque public media, signed-in mobile tests, and two-account
+privacy matrix pass. See [PROJECT-BOUNDARY.md](PROJECT-BOUNDARY.md),
+[ROADMAP-PROGRESS-2026-09-24.md](ROADMAP-PROGRESS-2026-09-24.md),
+[docs/ROADMAP.md](docs/ROADMAP.md), and [AGENTS.md](AGENTS.md).
