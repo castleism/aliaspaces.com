@@ -26,3 +26,30 @@ Profile publication and account linking require approval of the exact
 destination, copy, media, placement, visibility, disclosures, and time zone.
 No transition or provider action is authorized by this roadmap.
 
+## Changelog
+
+### 2026-09-26 — roadmap sweep
+
+- Front-door tests re-run: 2/2 pass. No code changes were needed.
+- Correction: commit `401480c` ("make the public site installable on a
+  phone") only added this roadmap file. `main` has no manifest or service
+  worker, and `https://aliaspaces.com/manifest.webmanifest` returns 404.
+- PWA work is intentionally not done here. The live page is a `noindex`
+  redirect to `mypersonas.online`, its CSP is `default-src 'none'` (which
+  also blocks a manifest), and the Pages artifact is a tested five-file
+  boundary. An installed app would only redirect. The installable app
+  belongs on `mypersonas.online`.
+
+## Blocked (owner input needed)
+
+| Item | What's needed |
+| --- | --- |
+| 2026-09-02 republication brief | Owner-approved persona fields, disclosures, media, destinations, visibility |
+| 2026-09-04 account confirmation | Readback of the Accounts workbook and owner verification |
+| 2026-09-11 first profile batch audit | An owner-approved batch to audit |
+| 2026-09-30 transition-page review | Not due yet; needs the current platform roadmap decision |
+| Redirect vs. full AliaSpaces home | Owner decision; DNS, Pages allowlist, and deploy each need approval |
+| PWA / installable site | Depends on the decision above; needs a CSP and artifact-boundary change |
+| Branch protection and Pages reviewer | Owner to change GitHub repository settings |
+| Android WebView bridge fix (PR #1) | Coordination with the mobile sprint; physical devices and two MFA staging accounts |
+
