@@ -10,7 +10,6 @@ import android.net.NetworkCapabilities
 import android.net.Uri
 import android.os.Bundle
 import android.webkit.CookieManager
-import android.webkit.JavascriptInterface
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceError
@@ -25,9 +24,9 @@ import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.browser.customtabs.CustomTabsIntent
+import androidx.webkit.WebViewCompat
+import androidx.webkit.WebViewFeature
 import androidx.webkit.WebViewAssetLoader
-import java.io.BufferedReader
-import java.io.InputStreamReader
 import java.nio.charset.StandardCharsets
 
 class MainActivity : AppCompatActivity() {
@@ -39,6 +38,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var localButton: Button
     private var appMode = MODE_WEBSITE
     private var pendingExport: String? = null
+    private var bridgeInstalled = false
+    private var documentEpoch = 0
+    private var pendingDocumentEpoch = -1
+    private var pendingFileUrl: String? = null
     private var fileCallback: ValueCallback<Array<Uri>>? = null
     private lateinit var liveShellJs: String
     private lateinit var assetLoader: WebViewAssetLoader
@@ -71,15 +74,15 @@ class MainActivity : AppCompatActivity() {
         webView.settings.domStorageEnabled = true
         webView.settings.allowFileAccess = false
         webView.settings.allowContentAccess = true
-        webView.settings.javaScriptCanOpenWindowsAutomatically = true
+        webView.settings.javaScriptCanOpenWindowsAutomatically = false
+        webView.settings.mixedContentMode = android.webkit.WebSettings.MIXED_CONTENT_NEVER_ALLOW
         webView.settings.userAgentString = webView.settings.userAgentString.replace("; wv", "")
-        webView.addJavascriptInterface(Bridge(), "AliaSpacesAndroid")
         webView.webViewClient = object : WebViewClient() {
             override fun shouldInterceptRequest(
                 view: WebView,
                 request: WebResourceRequest
             ): WebResourceResponse? {
-                return if (request.url.host == ASSET_HOST) assetLoader.shouldInterceptRequest(request.url) else null
+                return if (NavigationPolicy.isAsset(request.url.toString())) assetLoader.shouldInterceptRequest(request.url) else null
             }
 
             override fun shouldOverrideUrlLoading(
@@ -87,9 +90,15 @@ class MainActivity : AppCompatActivity() {
                 request: WebResourceRequest
             ): Boolean {
                 val url = request.url.toString()
-                if (isAllowed(url)) return false
-                openChrome(url)
+                if (!request.isForMainFrame) return false
+                if (NavigationPolicy.isAllowed(url, appMode)) return false
+                if (appMode != MODE_LOCAL) openChrome(url)
                 return true
+            }
+
+            override fun onPageStarted(view: WebView, url: String, favicon: android.graphics.Bitmap?) {
+                documentEpoch += 1
+                cancelPendingDocuments()
             }
 
             override fun onPageFinished(view: WebView, url: String) {
@@ -119,13 +128,23 @@ class MainActivity : AppCompatActivity() {
                 callback: ValueCallback<Array<Uri>>?,
                 params: FileChooserParams?
             ): Boolean {
-                fileCallback?.onReceiveValue(null)
-                fileCallback = callback
-                val intent = params?.createIntent() ?: Intent(Intent.ACTION_GET_CONTENT).apply {
-                    addCategory(Intent.CATEGORY_OPENABLE)
-                    type = "*/*"
+                cancelPendingDocuments()
+                val activeUrl = view?.url ?: ""
+                val mimeTypes = NavigationPolicy.fileTypes(activeUrl, appMode)
+                if (mimeTypes.isEmpty()) {
+                    callback?.onReceiveValue(null)
+                    return true
                 }
-                startActivityForResult(intent, REQUEST_FILE)
+                fileCallback = callback
+                pendingFileUrl = activeUrl
+                pendingDocumentEpoch = documentEpoch
+                val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+                    addCategory(Intent.CATEGORY_OPENABLE)
+                    type = mimeTypes.first()
+                    putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes.toTypedArray())
+                }
+                try { startActivityForResult(intent, REQUEST_FILE) }
+                catch (_: android.content.ActivityNotFoundException) { cancelPendingDocuments() }
                 return true
             }
         }
@@ -146,8 +165,7 @@ class MainActivity : AppCompatActivity() {
 
         if (savedInstanceState != null) {
             appMode = savedInstanceState.getString(STATE_MODE, MODE_WEBSITE) ?: MODE_WEBSITE
-            webView.restoreState(savedInstanceState)
-            renderMode()
+            showMode(appMode, restoreWebsite = true)
         } else if (!openIntent(intent)) {
             showMode(prefs().getString(PREF_MODE, MODE_WEBSITE) ?: MODE_WEBSITE, restoreWebsite = true)
         }
@@ -179,7 +197,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showMode(mode: String, url: String? = null, restoreWebsite: Boolean = false) {
-        appMode = mode
+        cancelPendingDocuments()
+        if (bridgeInstalled) {
+            WebViewCompat.removeWebMessageListener(webView, "AliaSpacesAndroid")
+            bridgeInstalled = false
+        }
+        appMode = if (mode in setOf(MODE_LOCAL, MODE_SOCIAL, MODE_WEBSITE)) mode else MODE_WEBSITE
+        if (appMode == MODE_LOCAL) installLocalBridge()
         prefs().edit().putString(PREF_MODE, mode).apply()
         renderMode()
         val target = when (mode) {
@@ -188,7 +212,8 @@ class MainActivity : AppCompatActivity() {
             else -> url
                 ?: if (restoreWebsite) prefs().getString(PREF_WEBSITE_URL, LIVE_URL) else LIVE_URL
         }
-        webView.loadUrl(target ?: LIVE_URL)
+        val safeTarget = target?.takeIf { NavigationPolicy.isAllowed(it, appMode) }
+        webView.loadUrl(safeTarget ?: if (appMode == MODE_LOCAL) LOCAL_URL else if (appMode == MODE_SOCIAL) SOCIAL_URL else LIVE_URL)
         updateOfflineBanner()
     }
 
@@ -218,7 +243,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun openChrome(url: String) {
-        CustomTabsIntent.Builder().build().launchUrl(this, Uri.parse(url))
+        if (!NavigationPolicy.isExternalHttps(url)) return
+        try { CustomTabsIntent.Builder().build().launchUrl(this, Uri.parse(url)) }
+        catch (_: android.content.ActivityNotFoundException) { Toast.makeText(this, "No browser available", Toast.LENGTH_SHORT).show() }
     }
 
     private fun prefs() = getSharedPreferences(PREFS, Context.MODE_PRIVATE)
@@ -256,12 +283,17 @@ class MainActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == REQUEST_FILE) {
-            val uris = if (resultCode == Activity.RESULT_OK && data?.data != null) arrayOf(data.data!!) else null
+            val currentDocument = pendingDocumentEpoch == documentEpoch && pendingFileUrl == webView.url
+            val allowed = NavigationPolicy.fileTypes(webView.url ?: "", appMode)
+            val mime = data?.data?.let { contentResolver.getType(it) }
+            val validMime = mime != null && allowed.any { it == mime || (it.endsWith("/*") && mime.startsWith(it.removeSuffix("*"))) }
+            val uris = if (currentDocument && validMime && resultCode == Activity.RESULT_OK && data?.data != null) arrayOf(data.data!!) else null
             fileCallback?.onReceiveValue(uris)
             fileCallback = null
             return
         }
-        if (resultCode != Activity.RESULT_OK || data?.data == null) return
+        if (pendingDocumentEpoch != documentEpoch || !isLocalDocument()) { pendingExport = null; return }
+        if (resultCode != Activity.RESULT_OK || data?.data == null) { pendingExport = null; return }
         val uri = data.data ?: return
         if (requestCode == REQUEST_EXPORT) writeExport(uri)
         if (requestCode == REQUEST_IMPORT) readImport(uri)
@@ -278,32 +310,67 @@ class MainActivity : AppCompatActivity() {
 
     private fun readImport(uri: Uri) {
         val text = contentResolver.openInputStream(uri)?.use { stream ->
-            BufferedReader(InputStreamReader(stream, StandardCharsets.UTF_8)).readText()
+            val buffer = java.io.ByteArrayOutputStream()
+            val chunk = ByteArray(8192)
+            while (buffer.size() <= MAX_JSON_BYTES) {
+                val count = stream.read(chunk, 0, minOf(chunk.size, MAX_JSON_BYTES + 1 - buffer.size()))
+                if (count < 0) break
+                buffer.write(chunk, 0, count)
+            }
+            val bytes = buffer.toByteArray()
+            if (bytes.size > MAX_JSON_BYTES) { Toast.makeText(this, "Import is too large", Toast.LENGTH_LONG).show(); return }
+            String(bytes, StandardCharsets.UTF_8)
         } ?: return
         val escaped = org.json.JSONObject.quote(text)
         webView.evaluateJavascript("window.AliaSpacesLocalApp && window.AliaSpacesLocalApp.replaceFromAndroid($escaped)", null)
     }
 
-    inner class Bridge {
-        @JavascriptInterface
-        fun exportJson(payload: String) {
-            pendingExport = payload
-            val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
-                addCategory(Intent.CATEGORY_OPENABLE)
-                type = "application/json"
-                putExtra(Intent.EXTRA_TITLE, "aliaspaces-local-demo.json")
-            }
-            startActivityForResult(intent, REQUEST_EXPORT)
-        }
+    private fun cancelPendingDocuments() {
+        fileCallback?.onReceiveValue(null)
+        fileCallback = null
+        pendingFileUrl = null
+        pendingExport = null
+        pendingDocumentEpoch = -1
+    }
 
-        @JavascriptInterface
-        fun importJson() {
-            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
-                addCategory(Intent.CATEGORY_OPENABLE)
-                type = "application/json"
+    private fun isLocalDocument() = appMode == MODE_LOCAL && NavigationPolicy.isLocalDocument(webView.url ?: "")
+
+    private fun installLocalBridge() {
+        if (!WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER)) return
+        WebViewCompat.addWebMessageListener(webView, "AliaSpacesAndroid", setOf("https://$ASSET_HOST")) {
+                _, message, sourceOrigin, isMainFrame, _ ->
+            if (!isMainFrame || sourceOrigin.toString() != "https://$ASSET_HOST" || !isLocalDocument()) return@addWebMessageListener
+            val data = message.data ?: return@addWebMessageListener
+            if (data.toByteArray(StandardCharsets.UTF_8).size > MAX_JSON_BYTES + 1024) return@addWebMessageListener
+            val request = try { org.json.JSONObject(data) } catch (_: Exception) { return@addWebMessageListener }
+            when (request.optString("action")) {
+                "export" -> {
+                    val payload = request.optString("payload")
+                    if (payload.toByteArray(StandardCharsets.UTF_8).size > MAX_JSON_BYTES) return@addWebMessageListener
+                    cancelPendingDocuments()
+                    pendingExport = payload
+                    pendingDocumentEpoch = documentEpoch
+                    val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+                        addCategory(Intent.CATEGORY_OPENABLE)
+                        type = "application/json"
+                        putExtra(Intent.EXTRA_TITLE, "aliaspaces-local-demo.json")
+                    }
+                    try { startActivityForResult(intent, REQUEST_EXPORT) }
+                    catch (_: android.content.ActivityNotFoundException) { cancelPendingDocuments() }
+                }
+                "import" -> {
+                    cancelPendingDocuments()
+                    pendingDocumentEpoch = documentEpoch
+                    val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+                        addCategory(Intent.CATEGORY_OPENABLE)
+                        type = "application/json"
+                    }
+                    try { startActivityForResult(intent, REQUEST_IMPORT) }
+                    catch (_: android.content.ActivityNotFoundException) { cancelPendingDocuments() }
+                }
             }
-            startActivityForResult(intent, REQUEST_IMPORT)
         }
+        bridgeInstalled = true
     }
 
     companion object {
@@ -323,29 +390,7 @@ class MainActivity : AppCompatActivity() {
         private const val PREF_MODE = "lastMode"
         private const val PREF_WEBSITE_URL = "lastWebsiteUrl"
 
-        fun isProductUrl(url: String): Boolean {
-            val host = Uri.parse(url).host ?: return false
-            return host == "mypersonas.online" || host == "www.mypersonas.online" ||
-                host == "aliaspaces.com" || host == "www.aliaspaces.com"
-        }
-
-        fun isAllowed(url: String): Boolean {
-            val host = (Uri.parse(url).host ?: return false).lowercase()
-            if (isProductUrl(url) || host == ASSET_HOST) return true
-            if (host.endsWith(".supabase.co") || host.endsWith(".googleusercontent.com") || host.endsWith(".gstatic.com")) return true
-            return host in setOf(
-                "nwsqyuucwzihruszocge.supabase.co",
-                "accounts.google.com",
-                "accounts.youtube.com",
-                "appleid.apple.com",
-                "cdn.jsdelivr.net",
-                "cdnjs.cloudflare.com",
-                "challenges.cloudflare.com",
-                "www.youtube.com",
-                "player.twitch.tv",
-                "player.kick.com",
-                "w.soundcloud.com",
-            )
-        }
+        private const val MAX_JSON_BYTES = 2 * 1024 * 1024
+        fun isProductUrl(url: String) = NavigationPolicy.isProduct(url)
     }
 }

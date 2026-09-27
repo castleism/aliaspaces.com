@@ -311,8 +311,8 @@
     link.click();
     link.remove();
     URL.revokeObjectURL(url);
-    if (window.AliaSpacesAndroid && typeof window.AliaSpacesAndroid.exportJson === "function") {
-      window.AliaSpacesAndroid.exportJson(api.serialize(state));
+    if (window.AliaSpacesAndroid && typeof window.AliaSpacesAndroid.postMessage === "function") {
+      window.AliaSpacesAndroid.postMessage(JSON.stringify({ action: "export", payload: api.serialize(state) }));
     }
     showToast("Local export created. This is not an online backup.");
   }
@@ -394,8 +394,8 @@
     }
     if (event.target.id === "exportData") return downloadExport();
     if (event.target.id === "importData") {
-      if (window.AliaSpacesAndroid && typeof window.AliaSpacesAndroid.importJson === "function") {
-        window.AliaSpacesAndroid.importJson();
+      if (window.AliaSpacesAndroid && typeof window.AliaSpacesAndroid.postMessage === "function") {
+        window.AliaSpacesAndroid.postMessage(JSON.stringify({ action: "import" }));
         return;
       }
       ensureFileInput().click();
