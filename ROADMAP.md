@@ -7,7 +7,7 @@ Last reconciled: 2026-09-27 AKDT
 - `aliaspaces.com` is live as a transition page.
 - `mypersonas.online` is the live persona-platform destination, but all 27
   database records currently marked for public visibility are nevertheless in
-  an unpublished publication state The September 27 read-only review snapshot contains 25 destination-link entries across the roster; these are not proof of approved provider account bindings.
+  an unpublished publication state. The September 27 read-only review snapshot contains 25 destination-link entries across the roster; these are not proof of approved provider account bindings.
 - AliaSpaces and MyPersonas have special rows in the Accounts workbook. Their
   exact canonical public account set still needs a current readback and owner
   verification.
