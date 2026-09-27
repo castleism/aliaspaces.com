@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#FAF9FC">
+
+    <TextView android:id="@+id/title" android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:padding="18dp" android:text="@string/app_name" android:fontFamily="serif" android:textSize="27sp" android:textColor="#273462" />
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:padding="6dp">
+        <Button android:id="@+id/liveButton" android:layout_width="0dp" android:layout_weight="1" android:layout_height="52dp" android:minWidth="0dp" android:textSize="12sp" android:textAllCaps="false" android:backgroundTint="#EBE7F3" android:textColor="#273462" android:text="@string/mode_website" />
+        <Button android:id="@+id/socialButton" android:layout_width="0dp" android:layout_weight="1" android:layout_height="52dp" android:minWidth="0dp" android:textSize="12sp" android:textAllCaps="false" android:backgroundTint="#EBE7F3" android:textColor="#273462" android:text="@string/mode_social" />
+        <Button android:id="@+id/localButton" android:layout_width="0dp" android:layout_weight="1" android:layout_height="52dp" android:minWidth="0dp" android:textSize="12sp" android:textAllCaps="false" android:backgroundTint="#EBE7F3" android:textColor="#273462" android:text="@string/mode_local" />
+        <Button android:id="@+id/browserButton" android:layout_width="0dp" android:layout_weight="1" android:layout_height="52dp" android:minWidth="0dp" android:textSize="12sp" android:textAllCaps="false" android:backgroundTint="#EBE7F3" android:textColor="#273462" android:text="@string/open_chrome" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/modeLabel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="8dp"
+        android:text="@string/website_mode_hint"
+        android:textSize="12sp"
+        android:textColor="#3b2c73"
+        android:background="#efe9ff" />
+
+    <TextView
+        android:id="@+id/offlineBanner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="8dp"
+        android:text="@string/offline_hint"
+        android:textSize="12sp"
+        android:textColor="#9b2c4a"
+        android:background="#f8e6eb"
+        android:visibility="gone" />
+
+    <WebView
+        android:id="@+id/webView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+</LinearLayout>

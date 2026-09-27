@@ -1,10 +1,9 @@
-name: Validate AliaSpaces front door
+name: Validate AliaSpaces front door and mobile
 
 on:
   pull_request:
-    branches: [main]
   push:
-    branches: [main]
+    branches: [main, 'codex/**', 'cursor/**', 'split/**']
   workflow_dispatch:
 
 permissions:
@@ -18,4 +17,4 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: "22"
-      - run: node --test tests/front-door.test.mjs
+      - run: npm test

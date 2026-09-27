@@ -22,3 +22,7 @@ Independent social application work must remain non-deploying until its shared
 contracts, opaque public media, signed-in mobile tests, and two-account privacy
 matrix pass. See [PROJECT-BOUNDARY.md](PROJECT-BOUNDARY.md) and
 [ROADMAP-PROGRESS-2026-09-24.md](ROADMAP-PROGRESS-2026-09-24.md).
+
+The isolated local/demo social mobile prototype lives in
+`apps/social-mobile/` and is not part of the Pages artifact. See
+`docs/ROADMAP.md` and `AGENTS.md`.
